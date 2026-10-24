@@ -1,0 +1,271 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    color-scheme: light;
+    --paper: #F4F1FB;
+    --sheet: #FFFFFF;
+    --ink: #1D1A3A;
+    --muted: #5B5878;
+    --line: #DAD5EE;
+    --graphite: #3B2F86;
+    --partial: #BDB4EE;
+    --hilite: #F4B6CE;
+    --on-hilite: #1D1A3A;
+    --math: #6D32B8;
+    --phys: #2F57C9;
+    --chem: #0F7A66;
+    --board: #A85A0A;
+    --danger: #B3261E;
+    --aura1: #E6DDFB;
+    --aura2: #FBE3EC;
+    --stars: 0;
+    --glow: rgba(59, 47, 134, .18);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #13112A;
+      --sheet: #1C1940;
+      --ink: #F1ECFA;
+      --muted: #B3AED6;
+      --line: #322E5E;
+      --graphite: #E8C872;
+      --partial: #5A52A0;
+      --hilite: #F0A6C3;
+      --on-hilite: #1A1633;
+      --math: #C9A6FF;
+      --phys: #93ABFF;
+      --chem: #7FD6C3;
+      --board: #F2B56B;
+      --danger: #FF8E8E;
+      --aura1: #2B2468;
+      --aura2: #4A2250;
+      --stars: .55;
+      --glow: rgba(0, 0, 0, .55);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #13112A;
+    --sheet: #1C1940;
+    --ink: #F1ECFA;
+    --muted: #B3AED6;
+    --line: #322E5E;
+    --graphite: #E8C872;
+    --partial: #5A52A0;
+    --hilite: #F0A6C3;
+    --on-hilite: #1A1633;
+    --math: #C9A6FF;
+    --phys: #93ABFF;
+    --chem: #7FD6C3;
+    --board: #F2B56B;
+    --danger: #FF8E8E;
+    --aura1: #2B2468;
+    --aura2: #4A2250;
+    --stars: .55;
+    --glow: rgba(0, 0, 0, .55);
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --paper: #F4F1FB;
+    --sheet: #FFFFFF;
+    --ink: #1D1A3A;
+    --muted: #5B5878;
+    --line: #DAD5EE;
+    --graphite: #3B2F86;
+    --partial: #BDB4EE;
+    --hilite: #F4B6CE;
+    --on-hilite: #1D1A3A;
+    --math: #6D32B8;
+    --phys: #2F57C9;
+    --chem: #0F7A66;
+    --board: #A85A0A;
+    --danger: #B3261E;
+    --aura1: #E6DDFB;
+    --aura2: #FBE3EC;
+    --stars: 0;
+    --glow: rgba(59, 47, 134, .18);
+  }
+
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: "Instrument Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    background: radial-gradient(ellipse 70% 50% at 12% -5%, var(--aura1), transparent 70%),
+                radial-gradient(ellipse 60% 45% at 95% 5%, var(--aura2), transparent 70%),
+                var(--paper);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: var(--stars);
+    z-index: 0;
+    background-image: radial-gradient(1px 1px at 12% 18%, #fff, transparent),
+                      radial-gradient(1px 1px at 38% 62%, #fff, transparent),
+                      radial-gradient(1.5px 1.5px at 71% 24%, #fff, transparent),
+                      radial-gradient(1px 1px at 86% 71%, #fff, transparent),
+                      radial-gradient(1px 1px at 54% 9%, #fff, transparent),
+                      radial-gradient(1.5px 1.5px at 22% 85%, #fff, transparent),
+                      radial-gradient(1px 1px at 93% 44%, #fff, transparent);
+    background-size: 520px 520px;
+  }
+}
+
+.font-serif-fraunces {
+  font-family: "Fraunces", Georgia, serif;
+}
+
+.font-sans-instrument {
+  font-family: "Instrument Sans", system-ui, sans-serif;
+}
+
+.moon-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: inset -7px -2px 0 0 var(--graphite);
+  margin-right: 12px;
+  flex: none;
+}
+
+/* Custom interactive bubble on answer sheet */
+.bubble-cell {
+  --p: 0;
+  width: 100%;
+  max-width: 44px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1.5px solid var(--partial);
+  background: conic-gradient(var(--partial) calc(var(--p) * 1%), transparent 0);
+  font-size: clamp(0.64rem, 2.3vw, 0.8rem);
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  color: var(--ink);
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s ease;
+}
+
+.bubble-cell:hover {
+  transform: scale(1.08);
+}
+
+.bubble-cell.sun {
+  border-radius: 36%;
+  border-color: var(--board);
+}
+
+.bubble-cell.today {
+  background-color: var(--hilite);
+  border-color: var(--hilite);
+  color: var(--on-hilite);
+}
+
+.bubble-cell.done {
+  background: var(--graphite) !important;
+  border-color: var(--graphite) !important;
+  color: var(--sheet) !important;
+}
+
+.bubble-cell.today.done {
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--hilite);
+}
+
+.bubble-cell.selected {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* Task card styling */
+.task-item {
+  position: relative;
+  border-bottom: 1px solid var(--line);
+}
+
+.task-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 3.5px;
+  border-radius: 3px;
+  background: var(--stripe, var(--graphite));
+}
+
+.subj-math { --stripe: var(--math); }
+.subj-phys { --stripe: var(--phys); }
+.subj-chem { --stripe: var(--chem); }
+.subj-delay { --stripe: var(--hilite); }
+.subj-board { --stripe: var(--board); }
+.subj-mock { --stripe: var(--graphite); }
+.subj-review { --stripe: var(--board); }
+.subj-log { --stripe: var(--danger); }
+.subj-rest { --stripe: var(--muted); }
+.subj-plan { --stripe: var(--graphite); }
+.subj-mix { --stripe: var(--phys); }
+
+/* Custom Checkbox circle */
+.custom-checkbox-box {
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid var(--stripe, var(--graphite));
+  border-radius: 50%;
+  margin-top: 2px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.custom-checkbox-input:checked + .custom-checkbox-box {
+  background: var(--stripe, var(--graphite));
+}
+
+.custom-checkbox-input:checked + .custom-checkbox-box::after {
+  content: "";
+  width: 6px;
+  height: 11px;
+  border: solid var(--paper);
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+.custom-checkbox-input:focus-visible + .custom-checkbox-box {
+  outline: 3px solid var(--hilite);
+  outline-offset: 3px;
+}
+
+/* Custom scrollbar for sheetcol */
+.sheet-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.sheet-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sheet-scroll::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 9999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

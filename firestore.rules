@@ -1,0 +1,109 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Connection probe for client validation
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Cross-Browser Synced Study Trackers (allows any browser visiting the app to sync progress)
+    match /study_trackers/{trackerId}/progress/{progressId} {
+      allow get, list: if isValidId(trackerId);
+      allow create: if isValidId(trackerId)
+                    && isValidId(progressId)
+                    && request.resource.data.done is map;
+      allow update: if isValidId(trackerId)
+                    && isValidId(progressId)
+                    && request.resource.data.done is map;
+      allow delete: if isValidId(trackerId) && isValidId(progressId);
+    }
+
+    match /study_trackers/{trackerId}/mocks/{mockId} {
+      allow get, list: if isValidId(trackerId);
+      allow create: if isValidId(trackerId)
+                    && isValidId(mockId)
+                    && request.resource.data.p is number
+                    && request.resource.data.c is number
+                    && request.resource.data.m is number
+                    && request.resource.data.date is string;
+      allow update: if isValidId(trackerId) && isValidId(mockId);
+      allow delete: if isValidId(trackerId) && isValidId(mockId);
+    }
+
+    match /study_trackers/{trackerId}/errors/{errorId} {
+      allow get, list: if isValidId(trackerId);
+      allow create: if isValidId(trackerId)
+                    && isValidId(errorId)
+                    && request.resource.data.chapter is string
+                    && request.resource.data.fixed is bool;
+      allow update: if isValidId(trackerId) && isValidId(errorId);
+      allow delete: if isValidId(trackerId) && isValidId(errorId);
+    }
+
+    match /study_trackers/{trackerId}/cards/{cardId} {
+      allow get, list: if isValidId(trackerId);
+      allow create: if isValidId(trackerId)
+                    && isValidId(cardId)
+                    && request.resource.data.title is string
+                    && request.resource.data.words is string;
+      allow update: if isValidId(trackerId) && isValidId(cardId);
+      allow delete: if isValidId(trackerId) && isValidId(cardId);
+    }
+
+    match /study_trackers/{trackerId}/board/{boardId} {
+      allow get, list: if isValidId(trackerId);
+      allow create: if isValidId(trackerId)
+                    && isValidId(boardId)
+                    && request.resource.data.marks is number
+                    && request.resource.data.type is string;
+      allow update: if isValidId(trackerId) && isValidId(boardId);
+      allow delete: if isValidId(trackerId) && isValidId(boardId);
+    }
+
+    // User-scoped subcollections (when signed in via Google)
+    match /users/{userId}/progress/{progressId} {
+      allow get, list: if isOwner(userId);
+      allow create, update: if isOwner(userId) && request.resource.data.done is map;
+      allow delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/mocks/{mockId} {
+      allow get, list: if isOwner(userId);
+      allow create, update, delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/errors/{errorId} {
+      allow get, list: if isOwner(userId);
+      allow create, update, delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/cards/{cardId} {
+      allow get, list: if isOwner(userId);
+      allow create, update, delete: if isOwner(userId);
+    }
+
+    match /users/{userId}/board/{boardId} {
+      allow get, list: if isOwner(userId);
+      allow create, update, delete: if isOwner(userId);
+    }
+  }
+}

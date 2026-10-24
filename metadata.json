@@ -1,0 +1,6 @@
+{
+  "name": "Study System: JEE Main + CBSE Class 12 Maths",
+  "description": "129-day personal study tracker and answer sheet for JEE Main & CBSE Class 12 Maths featuring 5D system, spaced repetition, mock logs, error tracking, and flashcards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

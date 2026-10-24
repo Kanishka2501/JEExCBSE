@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Study system: JEE Main + CBSE Class 12 Maths</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Instrument+Sans:wght@400..700&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light;
+--paper:#F4F1FB;--sheet:#FFFFFF;--ink:#1D1A3A;--muted:#5B5878;--line:#DAD5EE;--graphite:#3B2F86;--partial:#BDB4EE;--hilite:#F4B6CE;--on-hilite:#1D1A3A;
+--math:#6D32B8;--phys:#2F57C9;--chem:#0F7A66;--board:#A85A0A;--danger:#B3261E;--aura1:#E6DDFB;--aura2:#FBE3EC;--stars:0;--glow:rgba(59,47,134,.18)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--paper:#13112A;--sheet:#1C1940;--ink:#F1ECFA;--muted:#B3AED6;--line:#322E5E;--graphite:#E8C872;--partial:#5A52A0;--hilite:#F0A6C3;--on-hilite:#1A1633;
+--math:#C9A6FF;--phys:#93ABFF;--chem:#7FD6C3;--board:#F2B56B;--danger:#FF8E8E;--aura1:#2B2468;--aura2:#4A2250;--stars:.55;--glow:rgba(0,0,0,.55)}}
+:root[data-theme="dark"]{color-scheme:dark;--paper:#13112A;--sheet:#1C1940;--ink:#F1ECFA;--muted:#B3AED6;--line:#322E5E;--graphite:#E8C872;--partial:#5A52A0;--hilite:#F0A6C3;--on-hilite:#1A1633;
+--math:#C9A6FF;--phys:#93ABFF;--chem:#7FD6C3;--board:#F2B56B;--danger:#FF8E8E;--aura1:#2B2468;--aura2:#4A2250;--stars:.55;--glow:rgba(0,0,0,.55)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;color:var(--ink);font-family:"Instrument Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6;
+background:radial-gradient(ellipse 70% 50% at 12% -5%,var(--aura1),transparent 70%),radial-gradient(ellipse 60% 45% at 95% 5%,var(--aura2),transparent 70%),var(--paper);background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:var(--stars);z-index:0;
+background-image:radial-gradient(1px 1px at 12% 18%,#fff,transparent),radial-gradient(1px 1px at 38% 62%,#fff,transparent),radial-gradient(1.5px 1.5px at 71% 24%,#fff,transparent),radial-gradient(1px 1px at 86% 71%,#fff,transparent),radial-gradient(1px 1px at 54% 9%,#fff,transparent),radial-gradient(1.5px 1.5px at 22% 85%,#fff,transparent),radial-gradient(1px 1px at 93% 44%,#fff,transparent);
+background-size:520px 520px}
+header,main,footer{position:relative;z-index:1}
+h1,h2,h3,p,ul,ol,dl,dd{margin:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--hilite);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:22px}
+.top{padding-block:22px 6px;color:var(--muted);font-size:.92rem;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.top b{color:var(--ink);font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:400;font-size:1.15rem;display:flex;align-items:center}
+.moon{display:inline-block;width:20px;height:20px;border-radius:50%;box-shadow:inset -7px -2px 0 0 var(--graphite);margin-right:12px;flex:none}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr);gap:44px;padding-block:24px 64px}
+@media(min-width:920px){.workspace{grid-template-columns:minmax(0,1fr) 430px;gap:64px}.sheetcol{position:sticky;top:20px;align-self:start}}
+.btn{border:1px solid var(--line);background:transparent;border-radius:999px;padding:.5rem 1.15rem;cursor:pointer;font-weight:500;transition:background .2s,color .2s}
+.btn:hover{background:var(--line)}
+.btn.primary{background:var(--graphite);border-color:var(--graphite);color:var(--sheet);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.quiet{color:var(--muted)}
+.daynav{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px}
+.headline{font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:300;font-size:clamp(2.7rem,7.2vw,5rem);line-height:1.02;letter-spacing:-.025em;text-wrap:balance}
+.daysub{font-size:1.1rem;font-weight:500;margin-top:.9rem}
+.countdown,.meter-text{color:var(--muted);margin-top:.4rem;font-size:.95rem}
+.meter{height:6px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:1.4rem}
+.meter span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--hilite),var(--graphite));transition:width .3s}
+.tasks{list-style:none;margin:1.6rem 0 0;padding:0}
+.task{position:relative;border-bottom:1px solid var(--line);--stripe:var(--graphite)}
+.task::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:3px;background:var(--stripe)}
+.subj-math{--stripe:var(--math)}.subj-phys{--stripe:var(--phys)}.subj-chem{--stripe:var(--chem)}.subj-delay{--stripe:var(--hilite)}.subj-board{--stripe:var(--board)}
+.task-label{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;padding:18px 6px 18px 24px;cursor:pointer}
+.task input{position:absolute;opacity:0;width:1px;height:1px}
+.box{width:26px;height:26px;border:1.5px solid var(--stripe);border-radius:50%;margin-top:2px;display:grid;place-items:center;background:transparent;transition:background .2s}
+.task input:checked+.box{background:var(--stripe)}
+.task input:checked+.box::after{content:"";width:6px;height:11px;border:solid var(--paper);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.task input:focus-visible+.box{outline:3px solid var(--hilite);outline-offset:3px}
+.task-body{display:grid;gap:3px}
+.task-tag{font-size:.88rem;font-weight:600;color:var(--stripe)}
+.task-title{font-family:"Fraunces",Georgia,serif;font-size:1.22rem;font-weight:500;line-height:1.3}
+.task-detail{color:var(--muted);max-width:66ch;font-size:.96rem;white-space:pre-line}
+.task-time{font-size:.9rem;color:var(--muted);white-space:nowrap;padding-top:4px}
+.task input:checked~.task-body .task-title{text-decoration:line-through;text-decoration-thickness:1px;color:var(--muted)}
+@media(min-width:920px){.sheetcol{max-height:calc(100vh - 40px);overflow-y:auto;padding:4px}}
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:26px;padding:24px 20px 20px;box-shadow:0 40px 80px -50px var(--glow)}
+.sheet h2{font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:400;font-size:1.5rem}
+.sheet-sub{color:var(--muted);font-size:.93rem;margin:.3rem 0 1.2rem}
+.grid{display:grid;grid-template-columns:42px repeat(7,minmax(0,1fr));gap:8px 6px;align-items:center}
+.gh{font-size:.8rem;color:var(--muted);text-align:center}.rowlab{font-size:.76rem;color:var(--muted);white-space:nowrap}
+.bubble{--p:0;width:100%;max-width:46px;justify-self:center;aspect-ratio:1;border-radius:50%;border:1.5px solid var(--partial);background:conic-gradient(var(--partial) calc(var(--p)*1%),transparent 0);font-size:clamp(.62rem,2.5vw,.8rem);font-weight:600;display:grid;place-items:center;padding:0;cursor:pointer;color:var(--ink);transition:transform .15s}
+.bubble:hover{transform:scale(1.08)}
+.bubble.sun{border-radius:36%;border-color:var(--board)}
+.bubble.today{background-color:var(--hilite);border-color:var(--hilite);color:var(--on-hilite)}
+.bubble.done{background:var(--graphite);border-color:var(--graphite);color:var(--sheet)}
+.bubble.today.done{box-shadow:0 0 0 3px var(--paper),0 0 0 5px var(--hilite)}
+.bubble[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:3px}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;list-style:none;padding:0;margin:1.2rem 0 0;font-size:.86rem;color:var(--muted)}
+.legend li{display:flex;align-items:center;gap:8px}
+.legend .bubble{width:20px;pointer-events:none;font-size:0}
+.statline{margin-top:1.1rem;color:var(--muted)}.statline strong{color:var(--ink);font-family:"Fraunces",Georgia,serif;font-size:1.15rem;font-weight:600}
+.block{padding-block:64px;border-top:1px solid var(--line)}
+.block h2{font-family:"Fraunces",Georgia,serif;font-weight:300;font-size:clamp(1.9rem,4.2vw,2.8rem);line-height:1.1;letter-spacing:-.015em}
+.lede{color:var(--muted);max-width:68ch;margin-top:.8rem}
+.fived{display:grid;gap:34px 30px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:34px}
+.fived>div{border-top:1px solid var(--graphite);padding-top:14px}
+.fived h3{font-family:"Fraunces",Georgia,serif;font-size:1.25rem;font-weight:500;margin-top:.1rem}
+.fived .k{font-size:.88rem;color:var(--graphite);font-weight:600}
+.fived p{font-size:.95rem;margin-top:.4rem;color:var(--muted)}
+.phases{display:grid;gap:30px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-top:30px}
+.phases h3{font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:1.25rem}
+.phases .d{color:var(--graphite);font-size:.92rem;font-weight:500;margin:.1rem 0 .4rem}
+.phases p:last-child{color:var(--muted);font-size:.95rem}
+.rhythm{list-style:none;padding:0;margin:28px 0 0;max-width:780px}
+.rhythm li{display:grid;grid-template-columns:130px minmax(0,1fr);gap:14px;padding:11px 0 11px 18px;border-left:3px solid var(--partial);border-bottom:1px solid var(--line)}
+.rhythm .t{color:var(--muted);font-size:.95rem}
+.rhythm .math{border-left-color:var(--math)}.rhythm .phys{border-left-color:var(--phys)}.rhythm .chem{border-left-color:var(--chem)}.rhythm .dl{border-left-color:var(--hilite)}
+.note{margin-top:1.2rem;max-width:66ch;color:var(--muted)}
+.cols{display:grid;gap:40px;grid-template-columns:minmax(0,1fr);margin-top:30px}
+@media(min-width:900px){.cols{grid-template-columns:330px minmax(0,1fr);gap:56px}}
+.form{display:grid;gap:12px;align-content:start;background:var(--sheet);border:1px solid var(--line);border-radius:18px;padding:20px}
+.form label{display:grid;gap:4px;font-weight:500;font-size:.93rem}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+input[type=text],input[type=number],input[type=date],select{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:.55rem .7rem}
+.msg{min-height:1.4em;font-size:.93rem;color:var(--muted)}.msg.bad,.store{color:var(--danger)}
+.tablewrap{overflow-x:auto;margin-top:14px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:.85rem;padding:6px 10px 6px 0;border-bottom:1px solid var(--graphite);white-space:nowrap}
+td{padding:9px 10px 9px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+td.total{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:1.05rem}
+.link{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:.9rem}
+.link:hover{color:var(--ink)}
+.bars{display:grid;gap:8px;margin-bottom:16px}
+.bar{display:grid;grid-template-columns:150px minmax(0,1fr) 28px;gap:10px;align-items:center;font-size:.93rem}
+.bar .tr{height:6px;border-radius:5px;background:var(--line);overflow:hidden}
+.bar .tr i{display:block;height:100%;background:var(--graphite)}
+.errs{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.err{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+.err input{width:20px;height:20px;margin-top:3px;accent-color:var(--graphite)}
+.err.fixed .err-main{color:var(--muted);text-decoration:line-through}
+.err-main{font-weight:600}.err.red .err-main{color:var(--danger)}.err-meta,.empty{color:var(--muted);font-size:.93rem}
+.card{border:1px solid var(--line);border-left:3px solid var(--graphite);border-radius:6px 16px 16px 6px;background:var(--sheet);padding:12px 16px;margin-bottom:10px}
+.card summary{cursor:pointer;font-family:"Fraunces",Georgia,serif;font-weight:500;font-size:1.1rem}.card p{margin-top:.4rem;font-size:.95rem}
+.card .s{color:var(--muted);font-size:.85rem;font-family:"Instrument Sans",sans-serif}
+.foot{padding-block:36px 56px;border-top:1px solid var(--line);color:var(--muted);font-size:.93rem}
+.foot p{max-width:72ch;margin-bottom:.6rem}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<noscript><p style="padding:20px">This page needs JavaScript.</p></noscript>
+<header class="wrap top"><b><span class="moon" aria-hidden="true"></span>Study system: JEE Main + CBSE Class 12 Maths</b><span>Progress is saved in this browser</span></header>
+<main>
+<div class="wrap workspace">
+  <section aria-labelledby="dayTitle">
+    <div class="daynav">
+      <button class="btn quiet" id="prev" type="button">Previous day</button>
+      <button class="btn primary" id="goToday" type="button">Go to today</button>
+      <button class="btn quiet" id="next" type="button">Next day</button>
+    </div>
+    <h1 class="headline" id="dayTitle"></h1>
+    <p class="daysub" id="daySub"></p>
+    <p class="countdown" id="countdown"></p>
+    <p class="countdown" id="countdown2"></p>
+    <div class="meter" aria-hidden="true"><span id="meterFill"></span></div>
+    <p class="meter-text" id="meterText" aria-live="polite"></p>
+    <ul class="tasks" id="tasks"></ul>
+  </section>
+  <aside class="sheetcol" aria-label="Day tracker">
+    <div class="sheet">
+      <h2>Your answer sheet</h2>
+      <p class="sheet-sub">Day 1 is Saturday 24 October 2026 and day 129 is your Maths board exam (tentative, Monday 1 March 2027). Pick any day to see its tasks.</p>
+      <div class="grid" id="sheetGrid"></div>
+      <ul class="legend">
+        <li><span class="bubble" aria-hidden="true"></span>Not started</li>
+        <li><span class="bubble" style="--p:50" aria-hidden="true"></span>In progress</li>
+        <li><span class="bubble done" aria-hidden="true"></span>Finished</li>
+        <li><span class="bubble sun" aria-hidden="true"></span>Sunday test</li>
+        <li><span class="bubble today" aria-hidden="true"></span>Today</li>
+      </ul>
+    </div>
+    <p class="statline" id="statLine"></p>
+  </aside>
+</div>
+
+<section class="block"><div class="wrap">
+  <h2>The 5D system inside this plan</h2>
+  <p class="lede">Each D from your notes is built into the daily tasks, so you never have to remember to apply it. The same methods apply to your board Maths chapters.</p>
+  <div class="fived">
+    <div><span class="k">D1</span><h3>Diagnose</h3><p>Day 1 diagnostic paper. Every new chapter starts with a 10-question pre-test, so you study only the gaps. Scan 10 years of PYQs to find what repeats.</p></div>
+    <div><span class="k">D2</span><h3>Distil</h3><p>One flashcard per concept (small slip, title, own words, real example, diagram), 2 minutes each. Plus 3 to 4 trigger words per chapter. Physics and physical chemistry: formulas. Biology-style processes: flowcharts. Inorganic: pointers and exceptions. Organic: reaction, exception, mechanism.</p></div>
+    <div><span class="k">D3</span><h3>Delay</h3><p>The 1-3-7 rule runs by itself. Each day shows the chapters due for recall (+1 day), notes (+3), re-read and mini-test (+7), then spaced rounds at +17 and +32 days.</p></div>
+    <div><span class="k">D4</span><h3>Diversify</h3><p>The daily practice set rotates through Direct, Mixed, PYQ and Timed questions so no type gets neglected.</p></div>
+    <div><span class="k">D5</span><h3>Detect</h3><p>After every mock, sort questions into four buckets: Sure but wrong, Unsure but correct, Guessed but correct, Wrong and unaware. Spend the most effort on the first and last, written in red.</p></div>
+  </div>
+</div></section>
+
+<section class="block"><div class="wrap">
+  <h2>How the 129 days are split</h2>
+  <p class="lede">The JEE mock sprint ends on day 90, Thursday 21 January 2027, the day before the tentative Session 1 start on 22 January. The rest of the calendar then counts down to your Maths board paper, tentatively Monday 1 March 2027. Confirm the dates on jeemain.nta.nic.in and cbse.gov.in.</p>
+  <div class="phases" id="phases"></div>
+</div></section>
+
+<section class="block"><div class="wrap">
+  <h2>A normal study day</h2>
+  <p class="lede">Hardest subject first. Move the clock to suit you, but keep the order and the blocks.</p>
+  <ul class="rhythm">
+    <li><span class="t">06:30</span><span>Wake up, walk, water. Phone stays out of the study room.</span></li>
+    <li class="math"><span class="t">07:00 to 09:00</span><span>Maths: 10-question pre-test, Vora Classes lecture on the gaps, Sri Chaitanya module practice, make the cards</span></li>
+    <li><span class="t">09:00 to 09:30</span><span>Breakfast</span></li>
+    <li class="phys"><span class="t">09:30 to 11:30</span><span>Physics block, same routine (Vora lecture, then your Sri Chaitanya module)</span></li>
+    <li class="chem"><span class="t">11:45 to 13:45</span><span>Chemistry block, same routine (Vora lecture, then your Sri Chaitanya module)</span></li>
+    <li><span class="t">13:45 to 15:30</span><span>Lunch and a proper rest</span></li>
+    <li><span class="t">15:30 to 16:30</span><span>Practice set of the day (Direct, Mixed, PYQ or Timed), PYQs from Examside or Newton School of Technology</span></li>
+    <li class="math"><span class="t">16:30 to 17:15</span><span>Board Maths: NCERT exercise from Oswaal One for All, every answer written in full steps</span></li>
+    <li><span class="t">17:15 to 18:00</span><span>Exercise and free time</span></li>
+    <li class="dl"><span class="t">18:00 to 18:45</span><span>1-3-7 revision queue</span></li>
+    <li><span class="t">18:45 to 19:15</span><span>Error log, four buckets, formulas from memory</span></li>
+    <li><span class="t">22:00</span><span>Flip through your cards for 10 minutes instead of scrolling. Lights out by 23:00.</span></li>
+  </ul>
+  <p class="note">A bad day still counts if you finish one block per subject and the revision queue. Never double up the next day to catch up. Sunday evening is off.</p>
+</div></section>
+
+<section class="block" id="material"><div class="wrap">
+  <h2>Your study material</h2>
+  <p class="lede">Every task in the plan points to one of these. Stick to them and do not add new sources.</p>
+  <div class="fived">
+    <div><span class="k">JEE lectures</span><h3>Vora Classes (YouTube)</h3><p>Watch the lecture for the chapter on its day, note only the gaps, and turn each concept into a card.</p></div>
+    <div><span class="k">JEE practice</span><h3>Sri Chaitanya modules</h3><p>Your Class 11 and 12 modules for Maths, Physics and Chemistry. Basic questions first, then JEE Main level, then the harder exercises.</p></div>
+    <div><span class="k">JEE PYQs</span><h3>Examside and Newton School of Technology</h3><p>Chapter-wise PYQs after each chapter, the daily PYQ and timed sets, and full mocks for the Sunday tests and the mock sprint.</p></div>
+    <div><span class="k">Board 1</span><h3>Oswaal One for All, Class 12 Maths</h3><p>NCERT textbook and Exemplar questions, fully solved. Your base for every board chapter.</p></div>
+    <div><span class="k">Board 2</span><h3>Oswaal CBSE Question Bank</h3><p>Chapter-wise and topic-wise solved papers from 2017 to 2026. Use it for board-style questions after NCERT.</p></div>
+    <div><span class="k">Board 3</span><h3>Oswaal 15 Sample Papers</h3><p>Built on the CBSE sample paper released on 21 September 2026 for the 2027 exam. Used for timed, handwritten papers.</p></div>
+  </div>
+</div></section>
+
+<section class="block" id="board"><div class="wrap">
+  <h2>CBSE Class 12 Maths: board track</h2>
+  <p class="lede">Board Maths runs alongside JEE Maths, not on top of it. Most board chapters overlap with JEE, so each JEE chapter gets a 45-minute board task with NCERT questions written in full steps. Board-only Linear Programming is paired with Straight lines. JEE-only topics (complex numbers, sequences, binomial theorem, conics, statistics) have no board task.</p>
+  <div class="fived">
+    <div><span class="k">Chapters</span><h3>13 board chapters</h3><p>Relations and Functions, Inverse Trigonometry, Matrices, Determinants, Continuity and Differentiability, Applications of Derivatives, Integrals, Applications of Integrals, Differential Equations, Vector Algebra, 3D Geometry, Linear Programming, Probability.</p></div>
+    <div><span class="k">Rule 1</span><h3>NCERT first</h3><p>Use Oswaal One for All: read the solved examples, do every exercise, then the miscellaneous exercise. Board papers lean heavily on NCERT.</p></div>
+    <div><span class="k">Rule 2</span><h3>Write for step marks</h3><p>JEE rewards the final answer, boards reward steps. Write formula, substitution, working and conclusion. Practise on paper, not on screen.</p></div>
+    <div><span class="k">Rule 3</span><h3>Paper practice</h3><p>One paper from Oswaal 15 Sample Papers (80 marks, 3 hours) roughly every fourth revision day, plus one in the mock sprint and nine in the final stretch. The 2027 design: Section A 20 MCQ and assertion-reason (20 marks), B 5 very short (10), C 6 short (18), D 4 long (20), E 3 case-based (12), 38 questions in all. Check the official sample paper and marking scheme on cbse.gov.in in case the pattern changes.</p></div>
+    <div><span class="k">Dates</span><h3>Maths paper: 1 March (tentative)</h3><p>Day 129 is set to 1 March 2027. If CBSE publishes a different date, tell me and I will shift the calendar. Confirm on cbse.gov.in.</p></div>
+    <div><span class="k">Days 91 to 129</span><h3>Board mode</h3><p>A light revision window during JEE Session 1, a 14-day chapter sweep of all 13 board chapters (with the 1-3-7 queue), then nine full sample or previous-year papers, repair days and a calm last day.</p></div>
+  </div>
+  <div class="cols">
+    <form class="form" id="boardForm" novalidate>
+      <label>Date<input type="date" id="bDate"></label>
+      <div class="row2">
+        <label>Marks (out of 80)<input type="number" id="bMarks" min="0" max="80" step="1" inputmode="numeric"></label>
+        <label>Type<select id="bType"><option>Sample paper</option><option>Previous year paper</option><option>Chapter test</option></select></label>
+      </div>
+      <label>Biggest source of lost marks<select id="bReason"></select></label>
+      <button class="btn primary" type="submit">Save board paper</button>
+      <p class="msg" id="boardMsg" role="status"></p>
+    </form>
+    <div><p id="boardInsight"></p><div class="tablewrap"><table id="boardTable"></table></div></div>
+  </div>
+</div></section>
+
+<section class="block" id="mocks"><div class="wrap">
+  <h2>Mock log with the four buckets</h2>
+  <p class="lede">Log the day 1 diagnostic first. Each paper is out of 300. Next to the scores, count how many questions fell into each bucket.</p>
+  <div class="cols">
+    <form class="form" id="mockForm" novalidate>
+      <label>Date of the mock<input type="date" id="mDate"></label>
+      <div class="row3">
+        <label>Physics<input type="number" id="mP" min="-30" max="100" step="1" inputmode="numeric"></label>
+        <label>Chemistry<input type="number" id="mC" min="-30" max="100" step="1" inputmode="numeric"></label>
+        <label>Maths<input type="number" id="mM" min="-30" max="100" step="1" inputmode="numeric"></label>
+      </div>
+      <div class="row2">
+        <label>Sure but wrong<input type="number" id="b0" min="0" max="90" step="1" inputmode="numeric"></label>
+        <label>Wrong and unaware<input type="number" id="b3" min="0" max="90" step="1" inputmode="numeric"></label>
+        <label>Unsure but correct<input type="number" id="b1" min="0" max="90" step="1" inputmode="numeric"></label>
+        <label>Guessed but correct<input type="number" id="b2" min="0" max="90" step="1" inputmode="numeric"></label>
+      </div>
+      <button class="btn primary" type="submit">Save mock</button>
+      <p class="msg" id="mockMsg" role="status"></p>
+    </form>
+    <div><p id="insight"></p><div class="tablewrap"><table id="mockTable"></table></div></div>
+  </div>
+</div></section>
+
+<section class="block" id="errors"><div class="wrap">
+  <h2>Error log</h2>
+  <p class="lede">One line per wrong or skipped question. Sure-but-wrong and wrong-and-unaware entries show in red. Tick an entry as fixed only after you solve a fresh question of the same type cleanly.</p>
+  <div class="cols">
+    <form class="form" id="errForm" novalidate>
+      <label>Subject<select id="eSubj"><option>Maths</option><option>Physics</option><option>Chemistry</option></select></label>
+      <label>Chapter<input type="text" id="eChap" maxlength="80" autocomplete="off"></label>
+      <label>Bucket<select id="eReason"></select></label>
+      <label>What to remember<input type="text" id="eNote" maxlength="160" autocomplete="off" placeholder="Optional, one line"></label>
+      <button class="btn primary" type="submit">Add to error log</button>
+      <p class="msg" id="errMsg" role="status"></p>
+    </form>
+    <div><div class="bars" id="errBars"></div><ul class="errs" id="errList"></ul></div>
+  </div>
+</div></section>
+
+<section class="block" id="cards"><div class="wrap">
+  <h2>Flashcard stack</h2>
+  <p class="lede">1 concept = 1 card = 2 minutes. Write the title, your own words (Hindi, English or mixed), one real-life example, and a diagram idea. Keep the paper slip as the real card and use this as your searchable backup.</p>
+  <div class="cols">
+    <form class="form" id="cardForm" novalidate>
+      <label>Subject<select id="cSubj"><option>Maths</option><option>Physics</option><option>Chemistry</option></select></label>
+      <label>Title<input type="text" id="cTitle" maxlength="80" autocomplete="off"></label>
+      <label>In your own words<input type="text" id="cWords" maxlength="220" autocomplete="off"></label>
+      <label>Real-life example<input type="text" id="cEx" maxlength="160" autocomplete="off"></label>
+      <label>Diagram idea<input type="text" id="cDia" maxlength="120" autocomplete="off" placeholder="Optional, what you would sketch"></label>
+      <button class="btn primary" type="submit">Add card</button>
+      <p class="msg" id="cardMsg" role="status"></p>
+    </form>
+    <div><p class="err-meta" id="cardCount"></p><div id="cardList"></div></div>
+  </div>
+</div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p class="store" id="storeNote" hidden>This browser is blocking storage, so your ticks, scores and cards will be lost when you close the tab.</p>
+  <p>Chapter lists follow the recent JEE Main syllabus. NTA trims it from time to time, so check the current syllabus PDF and skip anything removed.</p>
+  <p>Board dates and the CBSE paper pattern can change, so check cbse.gov.in. Everything is stored only in this browser on this device. Dates follow your device clock.</p>
+  <button class="link" id="resetBtn" type="button">Clear all task ticks</button>
+</div></footer>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+function h(tag,props,...kids){
+  const el=document.createElement(tag);
+  if(props)Object.keys(props).forEach(k=>{const v=props[k];if(v==null||v===false)return;
+    if(k==='class')el.className=v;else if(k==='text')el.textContent=v;else if(k[0]==='.')el[k.slice(1)]=v;
+    else if(k.slice(0,2)==='on')el.addEventListener(k.slice(2),v);else el.setAttribute(k,v===true?'':v);});
+  kids.forEach(function add(c){if(c==null||c===false)return;if(Array.isArray(c))return c.forEach(add);el.append(c.nodeType?c:document.createTextNode(String(c)));});
+  return el;
+}
+const pad=n=>(n<10?'0':'')+n,fmt=(d,o)=>d.toLocaleDateString('en-GB',o),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+let storageOK=true;
+function load(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){storageOK=false;return f}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){$('storeNote').hidden=false}}
+let done=load('sys90.done',{});if(!done||typeof done!=='object'||Array.isArray(done))done={};
+let mocks=load('sys90.mocks',[]);mocks=Array.isArray(mocks)?mocks.filter(m=>m&&/^\d{4}-\d{2}-\d{2}$/.test(m.date)&&[m.p,m.c,m.m].every(Number.isFinite)):[];
+let errors=load('sys90.errors',[]);errors=Array.isArray(errors)?errors.filter(e=>e&&typeof e.chapter==='string'):[];
+let cards=load('sys90.cards',[]);cards=Array.isArray(cards)?cards.filter(c=>c&&typeof c.title==='string'):[];
+if(!storageOK)$('storeNote').hidden=false;
+
+const START=new Date(2026,9,24),TOTAL=129,EXAM=new Date(2027,0,22),BEXAM=new Date(2027,2,1),MS=864e5;
+const dateOf=n=>new Date(2026,9,24+n-1);
+const dayNum=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-START)/MS)+1;
+
+const parse=(s,kind)=>{const o=[];s.split(';').forEach(x=>{const p=x.split(':'),n=+p[1];for(let i=0;i<n;i++)o.push({name:p[0],part:i+1,of:n,kind:p[2]||kind})});return o};
+const M_SLOTS=parse('Sets, relations & functions:2;Quadratic equations & complex numbers:3;Sequences & series:2;Permutations, combinations & binomial theorem:3;Matrices & determinants:3;Trigonometry & inverse trigonometry:3;Limits, continuity & differentiability:4;Applications of derivatives:3;Indefinite integrals:3;Definite integrals & area:3;Differential equations:2;Straight lines:2;Circles:2;Parabola, ellipse & hyperbola:5;Vectors:3;3D geometry:3;Probability:3;Statistics & mathematical reasoning:2','math');
+const P_SLOTS=parse('Units, dimensions & errors:1;Kinematics:3;Laws of motion & friction:3;Work, energy & power:2;Centre of mass & collisions:2;Rotational motion:3;Gravitation:2;Properties of solids & fluids:3;Heat, kinetic theory & thermodynamics:4;Oscillations (SHM):2;Waves & sound:2;Electrostatics & capacitors:4;Current electricity:3;Magnetism & moving charges:3;EMI & alternating current:3;Ray optics:3;Wave optics & EM waves:2;Dual nature, atoms & nuclei:3;Semiconductors & experimental skills:3','phys');
+const C_SLOTS=parse('Mole concept & stoichiometry:3:pc;Atomic structure:2:pc;Chemical bonding & molecular structure:3:pc;Chemical thermodynamics:3:pc;Chemical & ionic equilibrium:4:pc;Redox & electrochemistry:3:pc;Solutions:2:pc;Chemical kinetics:2:pc;Periodic table & periodicity:2:inorg;s-block & p-block elements:4:inorg;d- and f-block elements:2:inorg;Coordination compounds:3:inorg;Salt analysis & practical chemistry:2:inorg;General organic chemistry:3:org;Hydrocarbons:2:org;Haloalkanes & haloarenes:2:org;Alcohols, phenols & ethers:2:org;Aldehydes, ketones & carboxylic acids:3:org;Amines & biomolecules:2:org;Name reactions & conversions:2:org','chem');
+const M_CL=['Algebra: sets, functions, quadratics, complex numbers, sequences','Counting, binomial theorem, matrices, determinants, probability','Trigonometry, vectors and 3D geometry','Limits, continuity and applications of derivatives','Integrals and differential equations','Coordinate geometry: lines, circles, conics'];
+const P_CL=['Mechanics I: kinematics, laws of motion, energy','Mechanics II: rotation, gravitation, solids and fluids','Heat, thermodynamics and kinetic theory','Oscillations and waves','Electrostatics, current, magnetism, EMI and AC','Optics and modern physics'];
+const C_CL=['Mole concept, atomic structure and bonding','Thermodynamics, equilibrium and electrochemistry','Solutions, kinetics and the periodic table','p-, d- and f-block elements and coordination compounds','General organic chemistry, hydrocarbons and halides','Alcohols, carbonyls, amines and name reactions'];
+
+const SUBJ={math:'Maths',phys:'Physics',chem:'Chemistry'};
+const PHASE={learn:'Learn and practise',revise:'Revise with PYQs',mocks:'Mock sprint',window:'JEE Session 1 window',bsweep:'Board Maths chapter sweep',bpaper:'Board paper practice',bexam:'Board exam day'};
+const BUCKETS=['Sure but wrong','Unsure but correct','Guessed but correct','Wrong and unaware'];
+const CARD_STYLE={math:'formula plus one shortcut',phys:'formulas only, derivation only if it repeats',pc:'formulas only',inorg:'pointers, with exceptions listed separately',org:'reaction, exceptions and mechanism'};
+const BOARD={'Sets, relations & functions':'Ch 1 Relations and Functions','Trigonometry & inverse trigonometry':'Ch 2 Inverse Trigonometric Functions','Matrices & determinants':'Ch 3 Matrices and Ch 4 Determinants','Limits, continuity & differentiability':'Ch 5 Continuity and Differentiability','Applications of derivatives':'Ch 6 Applications of Derivatives','Indefinite integrals':'Ch 7 Integrals','Definite integrals & area':'Ch 7 Definite Integrals and Ch 8 Applications of Integrals','Differential equations':'Ch 9 Differential Equations','Vectors':'Ch 10 Vector Algebra','3D geometry':'Ch 11 Three Dimensional Geometry','Probability':'Ch 13 Probability','Straight lines':'Ch 12 Linear Programming (board only)'};
+const B_CL=['Ch 1 Relations and Functions','Ch 3 Matrices, Ch 4 Determinants and Ch 13 Probability','Ch 2 Inverse Trigonometry, Ch 10 Vectors and Ch 11 3D Geometry','Ch 5 Continuity and Differentiability, Ch 6 Applications of Derivatives','Ch 7 Integrals, Ch 8 Applications of Integrals and Ch 9 Differential Equations','Ch 12 Linear Programming and your weakest board chapter'];
+let spN=0;
+const BPAPER=()=>{spN++;return {id:'q',subj:'board',tag:'Oswaal sample paper '+spN+' of 15',title:'Sample paper '+spN+', 3 hours',detail:'From Oswaal 15 Sample Papers. 80 marks, handwritten in full steps, exam timing, no phone. Check it against the marking scheme and log it in the board paper log.',time:'3 h'}};
+const DIV=[['Direct set','25 direct questions on recent formulas from your Sri Chaitanya module. Checks basics and baseline speed.'],['Mixed set','20 questions combining 2 to 3 chapters from the harder sections of your Sri Chaitanya module. Tricky, indirect.'],['PYQ set','30 PYQs from the last 10 years on finished chapters, filtered by chapter on Examside (use Newton School of Technology for extra sets).'],['Timed set','30 mixed PYQs from Examside or Newton School of Technology, 60 minutes, strict timer, no pausing.']];
+const GAPS=[[1,'recall','Close the book and write what you remember. Tick what you know, restudy the rest.'],[3,'notes','Go through your cards, flowcharts and short notes.'],[7,'re-read + mini-test','Fast re-read, then a 10-question mini-test. Redo what you got wrong.'],[17,'spaced round','Flip the cards, solve 5 questions.'],[32,'spaced round','Flip the cards, solve 5 questions.']];
+
+const logItem=()=>({id:'e',subj:'log',tag:'Detect',title:'Error log, four buckets, formulas from memory',detail:'Add every wrong or skipped question to the error log. Sure-but-wrong and wrong-and-unaware go in red. Write the day\'s formulas or reactions from memory.',time:'30 min'});
+
+function studyItems(n,k){
+  const learn=[];
+  const mk=(id,subj,list)=>{const s=list[k];learn.push(s.name);
+    const last=s.part===s.of;
+    const core=(s.part===1?'Watch the Vora Classes lecture on this chapter (YouTube), pausing to note only the gaps. Then solve the basic-level questions from your Sri Chaitanya module (Class 11 or 12, whichever holds the chapter).':last?'Mixed-level problems from your Sri Chaitanya module, then this chapter\'s PYQs of the last 10 years on Examside (or Newton School of Technology).':'Continue the next Vora Classes lecture or topic, then JEE Main level problems and the harder exercises from your Sri Chaitanya module.')+(s.part===1&&last?' Finish with this chapter\'s PYQs on Examside (or Newton School of Technology).':'');
+    return {id,subj,tag:SUBJ[subj]+(s.of>1?', part '+s.part+' of '+s.of:''),title:s.name,
+      detail:(s.part===1?'Diagnose: 10 questions before the lecture (15 min). ':'')+core+'\nDistil: one 2-minute card per concept, 3 to 4 trigger words. Card style: '+CARD_STYLE[s.kind]+'.',time:'2 h'}};
+  const items=[mk('m','math',M_SLOTS),mk('p','phys',P_SLOTS),mk('c','chem',C_SLOTS)];
+  const d=DIV[(n-1)%4];
+  items.push({id:'q',subj:'mix',tag:'Diversify: '+d[0],title:d[0],detail:d[1]+' Mark your guesses.',time:'1 h'});
+  const bs=M_SLOTS[k],bn=BOARD[bs.name];
+  if(bn)items.splice(3,0,{id:'b',subj:'board',tag:'Board Maths',title:bn,detail:(bs.part===1?'Open Oswaal One for All: read the NCERT solved examples, then do the exercise questions, writing each answer step by step and checking it against the book.':bs.part===bs.of?'NCERT miscellaneous exercise in One for All, then 3 questions of 3 and 5 marks on this chapter from the Oswaal Question Bank, in full steps.':'Continue the NCERT exercises in One for All in full steps, plus one case-based question from the Question Bank.')+' Skip any question marked as deleted from the syllabus. Add board-only formulas and standard results to your cards.',time:'45 min'});
+  return {items,learn};
+}
+function reviseItems(k){
+  const ci=Math.min(5,Math.floor(k*6/17)),T='Skim your cards and formula sheet, solve 40 PYQs from this cluster on Examside or Newton School of Technology against the clock, then redo every open error-log item for it.';
+  return [{id:'m',subj:'math',tag:'Maths revision',title:M_CL[ci],detail:T,time:'2 h'},{id:'p',subj:'phys',tag:'Physics revision',title:P_CL[ci],detail:T,time:'2 h'},{id:'c',subj:'chem',tag:'Chemistry revision',title:C_CL[ci],detail:T,time:'2 h'},
+    {id:'b',subj:'board',tag:'Board Maths revision',title:B_CL[ci],detail:'Redo the NCERT questions you marked in One for All, then 3 questions (3 and 5 marks) and one case-based question from this cluster\'s chapters in the Oswaal Question Bank, in full steps.',time:'45 min'},
+    k%4===3?BPAPER():{id:'q',subj:'mix',tag:'Timed section test',title:'Timed section test',detail:'45 mixed PYQs, 15 per subject, from Examside or Newton School of Technology, 60 minutes. Mark your guesses.',time:'1 h'}];
+}
+const sundayItems=phase=>{const l=phase==='learn';return [
+  {id:'t',subj:'mock',tag:'Weekly test',title:l?'Part test, 3 hours':'Full-syllabus mock, 3 hours',detail:l?'75 questions from chapters finished so far (a part test or PYQ set from Examside or Newton School of Technology), timed, no phone. Log it in the mock log.':'Full JEE Main paper from Examside or Newton School of Technology: 75 questions, 300 marks, timed. Log it in the mock log.',time:'3 h'},
+  {id:'a',subj:'review',tag:'Detect',title:'Sort every question into the four buckets',detail:'Sure but wrong, unsure but correct, guessed but correct, wrong and unaware. Re-solve the red ones without looking.',time:'90 min'},
+  {id:'e',subj:'log',tag:'Error log',title:'Update the error log',detail:'Add the misses. Mark an old entry fixed only if you solved it cleanly this week.',time:'30 min'},
+  {id:'r',subj:'rest',tag:'Rest',title:'Take the evening off',detail:'Sleep is part of the plan.',time:''}]};
+const day1Items=()=>[
+  {id:'t',subj:'mock',tag:'D1 Diagnose',title:'Take a full JEE Main paper, 3 hours',detail:'A full JEE Main paper from Examside (or Newton School of Technology) under exam conditions: timer on, phone away, no pausing. The score does not matter today. Log it in the mock log.',time:'3 h'},
+  {id:'a',subj:'review',tag:'D5 Detect',title:'Sort every question into the four buckets',detail:'Sure but wrong, unsure but correct, guessed but correct, wrong and unaware. Add the misses to the error log.',time:'2 h'},
+  {id:'w',subj:'plan',tag:'D1 Diagnose',title:'Find what repeats and name your five weakest chapters',detail:'Use Examside to filter the last 10 years of JEE Main PYQs by chapter and see which chapters and formulas repeat. If a weak chapter sits far down this plan, pull it forward.',time:'40 min'},
+  {id:'s',subj:'plan',tag:'D2 Setup',title:'Build your card kit and lock in your resources',detail:'Buy small paper slips, a black pen, a red pen and a box. Your resources are fixed: Vora Classes on YouTube for lectures, your Sri Chaitanya Class 11 and 12 modules for practice, Examside and Newton School of Technology for PYQs, and the three Oswaal books for board Maths. Do not add more. Choose a wake-up time you can keep every day.',time:'30 min'}];
+const day2Items=()=>[
+  {id:'m',subj:'plan',tag:'Setup',title:'Map your material to the plan',detail:'For each chapter in this plan, note the matching Vora Classes playlist on YouTube and the page range in your Sri Chaitanya Class 11 and 12 modules. Save the playlists per subject and test that your Examside and Newton School of Technology logins work.',time:'1.5 h'},
+  {id:'o',subj:'board',tag:'Board Maths setup',title:'Walk through your three Oswaal books',detail:'In One for All, find the solved NCERT and Exemplar sections. In the Question Bank, find the chapter-wise question lists. In the 15 Sample Papers, read the paper design table: 38 questions, 80 marks, Sections A to E, with a new figure-based question in Section C. Slip a marker at the start of each chapter.',time:'1 h'},
+  {id:'r',subj:'rest',tag:'Rest',title:'Take the evening off',detail:'Tomorrow the chapter work begins. Sleep early.',time:''}];
+function mockItems(n){
+  const md={81:1,82:2,84:3,86:4,88:5,89:6};
+  if(md[n]){const r=n===89;return [
+    {id:'t',subj:'mock',tag:'Full mock '+md[n],title:r?'Exam-day rehearsal, 3 hours':'Full JEE Main paper, 3 hours',detail:r?'Same start time as Session 1, same breakfast, phone out of the room. Log the score.':'Full paper from Examside or Newton School of Technology. 75 questions, 300 marks, timed. Log it in the mock log.',time:'3 h'},
+    {id:'a',subj:'review',tag:'Detect',title:'Sort every question into the four buckets',detail:'Spend longer on this than on the paper. Re-solve each red question cold.',time:'2 h'},
+    {id:'e',subj:'log',tag:'Error log',title:'Update the error log',detail:'Mark entries fixed only after a clean solve.',time:'30 min'}]}
+  if(n===83||n===87){const rep=(id,s)=>({id,subj:s,tag:SUBJ[s]+' repair',title:'Fix your most-missed chapter',detail:'Pick the chapter that costs you the most marks from the error log. Relearn it, then solve 20 fresh questions.',time:'2 h'});
+    return [rep('m','math'),rep('p','phys'),rep('c','chem'),n===83?BPAPER():{id:'q',subj:'mix',tag:'Timed',title:'Timed section test',detail:'45 mixed questions, 60 minutes.',time:'1 h'},logItem()]}
+  if(n===85){const f=(id,s)=>({id,subj:s,tag:SUBJ[s],title:'Formula and reaction sheet',detail:'Write the whole sheet from memory, check it, rewrite what you missed.',time:'2 h'});
+    return [f('m','math'),f('p','phys'),f('c','chem'),{id:'q',subj:'mix',tag:'PYQ',title:'60 mixed PYQs',detail:'One timed set of 60 PYQs from Examside or Newton School of Technology, 90 minutes.',time:'90 min'},logItem()]}
+  return [{id:'f',subj:'mix',tag:'Light revision',title:'Skim cards, formula sheets and the error log',detail:'No new topics. Read, do not grind.',time:'2 h'},
+    {id:'n',subj:'plan',tag:'Admin',title:'Check registration, admit card dates and exam city',detail:'Confirm your form on jeemain.nta.nic.in and note when the Session 1 admit card is due.',time:'30 min'},
+    {id:'z',subj:'rest',tag:'Rest',title:'Sleep early',detail:'The JEE mock sprint ends today. Session 1 is tentatively 22 January 2027, tomorrow. Confirm the date with NTA.',time:''}];
+}
+
+const BCH=['Ch 1 Relations and Functions','Ch 2 Inverse Trigonometric Functions','Ch 3 Matrices','Ch 4 Determinants','Ch 5 Continuity and Differentiability','Ch 6 Applications of Derivatives','Ch 7 Integrals','Ch 8 Applications of Integrals','Ch 9 Differential Equations','Ch 10 Vector Algebra','Ch 11 Three Dimensional Geometry','Ch 12 Linear Programming','Ch 13 Probability'];
+const PAPERS={116:1,117:2,118:3,119:4,120:5,121:6,122:7,124:8,126:9};
+function boardItems(n){
+  const L=logItem();
+  if(n<=100){
+    const it=[{id:'b',subj:'board',tag:'Board Maths, light',title:BCH[(n-91)%13],detail:'Rapid NCERT revision in Oswaal One for All: solved examples, then only the exercise questions you marked, in full steps. Keep it calm in this window.',time:'1.5 h'},
+      {id:'f',subj:'mix',tag:'D2 Distil',title:'Flip your cards for 20 minutes',detail:'Formulas, trigger words and diagrams. On your JEE paper day, do only this and sleep early.',time:'20 min'}];
+    if(n===91)it.unshift({id:'n',subj:'plan',tag:'Admin',title:'Check your Session 1 admit card, centre and what to carry',detail:'Confirm the details on jeemain.nta.nic.in and pack your documents tonight.',time:'30 min'});
+    return it.concat([L]);
+  }
+  if(n===101)return [{id:'a',subj:'review',tag:'D5 Detect',title:'Sort your JEE Session 1 questions into the four buckets',detail:'Use your memory of the paper and your own working. Add misses to the error log. Then decide calmly whether to plan for Session 2 (expected April).',time:'2 h'},L,{id:'r',subj:'rest',tag:'Rest',title:'Take the rest of the day off',detail:'The board sweep starts tomorrow.',time:''}];
+  if(n<=114){const ch=BCH[n-102];return [
+    {id:'b',subj:'board',tag:'Board Maths sweep',title:ch,detail:'In Oswaal One for All, read the NCERT solved examples fast, then redo every exercise question you marked. Write each solution in full steps: formula, substitution, working, conclusion.',time:'2 h'},
+    {id:'k',subj:'board',tag:'D4 Diversify',title:'20 board-style questions on '+ch.slice(ch.indexOf(' ',4)+1),detail:'Use the chapter-wise and topic-wise section of the Oswaal Question Bank (solved papers 2017 to 2026): a mix of 1, 2, 3 and 5-mark questions plus one case-based question. Time yourself at about one minute per mark, then check against the solutions.',time:'1.5 h'},
+    {id:'c',subj:'board',tag:'D2 Distil',title:'Rewrite this chapter\'s cards',detail:'One card per concept, 3 to 4 trigger words, one diagram where it helps. 2 minutes each.',time:'30 min'},
+    {id:'j',subj:'mix',tag:'JEE upkeep',title:'Physics and Chemistry upkeep',detail:'Flip your cards and solve 20 mixed PYQs so the JEE work stays fresh for Session 2 (expected April).',time:'1 h'},L];}
+  if(n===115)return [{id:'b',subj:'board',tag:'Board Maths repair',title:'Repair your three weakest board chapters',detail:'Pick them from the error log and your sweep results. Relearn each from One for All, then solve 15 fresh questions per chapter from the Oswaal Question Bank in full steps.',time:'3 h'},L];
+  if(PAPERS[n]){const q=BPAPER();q.tag='Board paper '+PAPERS[n]+' of 9, '+q.tag;return [q,
+    {id:'a',subj:'review',tag:'D5 Detect',title:'Check every lost mark',detail:'Sort misses into concept gap, calculation slip, steps not written and time pressure. Redo each red question cold.',time:'90 min'},L];}
+  if(n===123||n===125)return [{id:'b',subj:'board',tag:'Board Maths repair',title:'Formula sheet from memory, then fix the gaps',detail:'Write every board formula and standard result from memory, check it, rewrite what you missed. Then redo the open error-log items, using One for All for the gaps.',time:'2 h'},{id:'f',subj:'mix',tag:'D2 Distil',title:'Flip your cards',detail:'All 13 chapters, quickly.',time:'30 min'},L];
+  if(n===127)return [{id:'b',subj:'board',tag:'Light revision',title:'Skim solved examples of your three weakest chapters in One for All',detail:'No new papers today. Read, do not grind.',time:'2 h'},{id:'f',subj:'mix',tag:'D2 Distil',title:'Flip your cards',detail:'Formulas, diagrams and trigger words.',time:'30 min'}];
+  if(n===128)return [{id:'b',subj:'board',tag:'Light revision',title:'Handwritten formula sheet and card flip',detail:'One clean page per group of chapters, then flip your cards for 30 minutes. Pack your admit card, geometry box and pens, and check the exam centre route tonight.',time:'1.5 h'},{id:'z',subj:'rest',tag:'Rest',title:'Sleep early',detail:'You have done the work. Lights out by 22:00.',time:''}];
+  return [{id:'x',subj:'board',tag:'Exam day',title:'CBSE Class 12 Maths board exam (tentative date)',detail:'Reach early. Spend the first 15 minutes reading the whole paper, attempt in order of confidence, write every step, keep 10 minutes to check.',time:'3 h'}];
+}
+const DAYS=[null];
+(function build(){
+  let lk=0,rk=0;
+  for(let n=1;n<=TOTAL;n++){
+    const date=dateOf(n),dow=date.getDay(),phase=n<=61?'learn':n<=80?'revise':n<=90?'mocks':n<=100?'window':n<=115?'bsweep':n<=128?'bpaper':'bexam';
+    let kind='study',items,learn=null,bch=null;
+    if(n===1){kind='diagnostic';items=day1Items()}
+    else if(n===2){kind='setup';items=day2Items()}
+    else if(n>=91){kind='board';items=boardItems(n);bch=n>=102&&n<=114?[BCH[n-102]]:null}
+    else if(phase==='mocks'){kind='mock';items=mockItems(n)}
+    else if(dow===0){kind='test';items=sundayItems(phase)}
+    else if(phase==='learn'){const r=studyItems(n,lk++);items=r.items;learn=r.learn}
+    else items=reviseItems(rk++);
+    DAYS.push({n,date,dow,phase,kind,items,learn,bch});
+  }
+  for(let n=2;n<=127;n++){
+    const D=DAYS[n];if(D.kind==='mock')continue;
+    const lines=[];
+    GAPS.forEach(g=>{const s=DAYS[n-g[0]];if(n-g[0]>=2&&s&&(s.learn||s.bch))lines.push('+'+g[0]+' days, '+g[1]+': '+(s.learn||s.bch).join('; ')+'\n    '+g[2])});
+    if(lines.length){
+      const it={id:'d',subj:'delay',tag:'D3 Delay: 1-3-7 revision',title:lines.length+' revision round'+(lines.length>1?'s':'')+' due today',detail:lines.join('\n'),time:'45 min'};
+      const at=D.kind==='study'?4:D.kind==='board'?1:0;D.items.splice(at,0,it);
+    }
+    if(D.kind==='study'||D.kind==='diagnostic')continue;
+  }
+  DAYS.forEach(D=>{if(D&&D.kind==='study'&&D.n>1)D.items.push(logItem())});
+})();
+
+const now=new Date(),todayNum=dayNum(now);
+let selected=clamp(todayNum,1,TOTAL);
+const bubbles={};
+const dayProgress=n=>{const it=DAYS[n].items,c=it.filter(x=>done[n+':'+x.id]).length;return {c,t:it.length}};
+function relLabel(n){const d=n-todayNum;return d===0?'Today':d===1?'Tomorrow':d===-1?'Yesterday':d>1?'In '+d+' days':(-d)+' days ago'}
+function renderPanel(){
+  const D=DAYS[selected];
+  $('dayTitle').textContent=fmt(D.date,{weekday:'long',day:'numeric',month:'long'});
+  const ex=D.kind==='test'?' Weekly test day.':D.kind==='diagnostic'?' Diagnostic day.':D.kind==='setup'?' Setup day, light.':D.kind==='mock'?'':'';
+  $('daySub').textContent=relLabel(selected)+'. Day '+selected+' of '+TOTAL+'. '+PHASE[D.phase]+'.'+ex;
+  const list=$('tasks');list.replaceChildren();
+  D.items.forEach(it=>{
+    const key=selected+':'+it.id,day=selected;
+    const input=h('input',{type:'checkbox','.checked':!!done[key]});
+    input.addEventListener('change',()=>{if(input.checked)done[key]=true;else delete done[key];save('sys90.done',done);updateProgress(day)});
+    list.append(h('li',{class:'task subj-'+it.subj},h('label',{class:'task-label'},input,h('span',{class:'box','aria-hidden':'true'}),
+      h('span',{class:'task-body'},h('span',{class:'task-tag',text:it.tag}),h('span',{class:'task-title',text:it.title}),h('span',{class:'task-detail',text:it.detail})),
+      it.time?h('span',{class:'task-time',text:it.time}):null)));
+  });
+  paintMeter();
+  Object.keys(bubbles).forEach(k=>bubbles[k].setAttribute('aria-pressed',String(+k===selected)));
+}
+function paintMeter(){const p=dayProgress(selected);$('meterFill').style.width=(p.t?p.c/p.t*100:0)+'%';$('meterText').textContent=p.c+' of '+p.t+' tasks done'+(p.c===p.t&&p.t?'. Day finished.':'.')}
+function updateProgress(n){if(n===selected)paintMeter();paintBubble(n);renderStats()}
+function selectDay(n,fromSheet){selected=clamp(n,1,TOTAL);renderPanel();
+  if(fromSheet&&$('dayTitle').getBoundingClientRect().top<0)$('dayTitle').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
+function paintBubble(n){
+  const b=bubbles[n],p=dayProgress(n),D=DAYS[n];
+  b.style.setProperty('--p',Math.round(p.t?p.c/p.t*100:0));
+  b.classList.toggle('done',p.t>0&&p.c===p.t);
+  b.setAttribute('aria-label','Day '+n+', '+fmt(D.date,{weekday:'long',day:'numeric',month:'long'})+(D.dow===0?', test day':'')+', '+p.c+' of '+p.t+' tasks done');
+}
+function buildSheet(){
+  const g=$('sheetGrid');g.append(h('span'));
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d=>g.append(h('span',{class:'gh',text:d})));
+  for(let r=0;r<Math.floor((TOTAL+4)/7)+1;r++){
+    g.append(h('span',{class:'rowlab',text:fmt(new Date(2026,9,19+7*r),{day:'numeric',month:'short'})}));
+    for(let c=0;c<7;c++){
+      const n=r*7+c-4;
+      if(n<1||n>TOTAL){g.append(h('span'));continue}
+      const b=h('button',{type:'button',class:'bubble'+(DAYS[n].dow===0?' sun':'')+(n===todayNum?' today':''),'aria-pressed':'false',text:String(n),onclick:()=>selectDay(n,true)});
+      bubbles[n]=b;g.append(b);paintBubble(n);
+    }
+  }
+}
+function renderStats(){
+  let days=0,c=0,t=0;
+  for(let n=1;n<=TOTAL;n++){const p=dayProgress(n);c+=p.c;t+=p.t;if(p.t&&p.c===p.t)days++}
+  $('statLine').replaceChildren(h('strong',{text:days+' of '+TOTAL}),' days finished. ',h('strong',{text:String(c)}),' of '+t+' tasks done.');
+}
+function renderCountdown(){
+  const left=Math.round((EXAM-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/MS),el=$('countdown');
+  if(left>1)el.replaceChildren(h('strong',{text:left+' days'}),' until JEE Main Session 1 (tentative start, 22 January 2027).');
+  else if(left>=-8)el.textContent='The Session 1 window is near or open (tentative, 22 to 30 January 2027). Check NTA.';
+  else el.textContent='The Session 1 window has passed. Session 2 is expected in April 2027.';
+}
+function renderCountdown2(){
+  const left=Math.round((BEXAM-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/MS),el=$('countdown2');
+  if(left>0)el.replaceChildren(h('strong',{text:left+' days'}),' until your Maths board paper (tentative, 1 March 2027).');
+  else if(left===0)el.textContent='Your Maths board paper is today (tentative date). Good luck.';
+  else el.textContent='The tentative Maths board date has passed.';
+}
+function renderPhases(){
+  const r=(a,b)=>fmt(dateOf(a),{day:'numeric',month:'short'})+' to '+fmt(dateOf(b),{day:'numeric',month:'short'});
+  const P=[['Learn and practise','Days 1 to 61, '+r(1,61),'Day 1 is the diagnostic. Then three 2-hour blocks a day take you through every chapter once, with pre-tests, cards, the 1-3-7 queue, a board Maths task on overlapping chapters and a part test each Sunday.'],
+    ['Revise with PYQs','Days 62 to 80, '+r(62,80),'Six clusters per subject, each with 40 PYQs, board revision and your error log. Every fourth day has a CBSE sample paper. Sundays are full-syllabus mocks.'],
+    ['Mock sprint','Days 81 to 90, '+r(81,90),'Six full JEE mocks with long four-bucket analysis, repair days and a board sample paper.'],
+    ['JEE Session 1 window','Days 91 to 101, '+r(91,101),'Light board revision and card flips, nothing heavy. Day 101 is your Session 1 paper analysis.'],
+    ['Board Maths sweep','Days 102 to 115, '+r(102,115),'One board chapter a day: NCERT, 20 board-style questions, fresh cards, Physics and Chemistry upkeep, and the 1-3-7 queue. Day 115 repairs your weakest chapters.'],
+    ['Board paper practice','Days 116 to 128, '+r(116,128),'Nine full CBSE papers in full steps with a lost-marks check, repair days, then a calm last day.'],
+    ['Maths board exam','Day 129, '+r(129,129),'Tentative date. Tell me if it moves and I will shift the calendar.']];
+  P.forEach(p=>$('phases').append(h('div',{},h('h3',{text:p[0]}),h('p',{class:'d',text:p[1]}),h('p',{text:p[2]}))));
+}
+
+const total=m=>m.p+m.c+m.m;
+const shortDate=iso=>fmt(new Date(iso+'T00:00:00'),{day:'numeric',month:'short'});
+const sortedMocks=()=>mocks.slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a.ts||0)-(b.ts||0));
+function renderMocks(){
+  const t=$('mockTable'),d=sortedMocks();t.replaceChildren();
+  const ins=$('insight');
+  if(!d.length){ins.textContent='Your scores and bucket counts appear here once you save a mock. The day 1 diagnostic is the first entry.';return}
+  const last=d[d.length-1];let s='Latest: '+total(last)+' out of 300.';
+  if(d.length>1){const df=total(last)-total(d[d.length-2]);s+=df===0?' Level with the previous mock.':(df>0?' Up ':' Down ')+Math.abs(df)+' from the previous mock.'}
+  if(last.b)s+=' Sure-but-wrong: '+last.b[0]+', wrong-and-unaware: '+last.b[3]+'. These two are where to practise.';
+  ins.textContent=s;
+  t.append(h('thead',{},h('tr',{},['Date','Phy','Chem','Maths','Total','Sure but wrong','Wrong, unaware','Guessed correct',''].map(x=>h('th',{text:x})))));
+  const body=h('tbody');
+  d.slice().reverse().forEach(m=>body.append(h('tr',{},h('td',{text:shortDate(m.date)}),h('td',{text:String(m.p)}),h('td',{text:String(m.c)}),h('td',{text:String(m.m)}),h('td',{class:'total',text:String(total(m))}),
+    h('td',{text:m.b?String(m.b[0]):''}),h('td',{text:m.b?String(m.b[3]):''}),h('td',{text:m.b?String(m.b[2]):''}),
+    h('td',{},h('button',{type:'button',class:'link','aria-label':'Remove the mock from '+shortDate(m.date),text:'Remove',onclick:()=>{mocks=mocks.filter(x=>x!==m);save('sys90.mocks',mocks);renderMocks()}})))));
+  t.append(body);
+}
+function initMocks(){
+  $('mDate').value=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+  $('mockForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const msg=$('mockMsg'),iso=$('mDate').value,v=['mP','mC','mM'].map(i=>$(i).value===''?NaN:+$(i).value),b=['b0','b1','b2','b3'].map(i=>$(i).value===''?0:+$(i).value);
+    msg.className='msg bad';
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)){msg.textContent='Pick the date of the mock.';return}
+    if(v.some(x=>!Number.isInteger(x)||x<-30||x>100)){msg.textContent='Enter each subject score as a whole number from -30 to 100.';return}
+    if(b.some(x=>!Number.isInteger(x)||x<0||x>90)){msg.textContent='Bucket counts must be whole numbers from 0 to 90.';return}
+    const m={date:iso,p:v[0],c:v[1],m:v[2],b,ts:Date.now()};
+    mocks.push(m);save('sys90.mocks',mocks);
+    ['mP','mC','mM','b0','b1','b2','b3'].forEach(i=>{$(i).value=''});
+    msg.className='msg';msg.textContent='Saved. Total '+total(m)+' out of 300.';renderMocks();
+  });
+  renderMocks();
+}
+
+function renderErrors(){
+  const open=errors.filter(e=>!e.fixed).sort((a,b)=>(b.ts||0)-(a.ts||0)),fixed=errors.filter(e=>e.fixed).sort((a,b)=>(b.ts||0)-(a.ts||0));
+  const bars=$('errBars'),list=$('errList');bars.replaceChildren();list.replaceChildren();
+  if(!errors.length){bars.append(h('p',{class:'empty',text:'Nothing logged yet. After your day 1 diagnostic, add every wrong or skipped question here.'}));return}
+  const counts=BUCKETS.map(r=>open.filter(e=>e.reason===r).length),max=Math.max(1,...counts);
+  bars.append(h('p',{class:'err-meta',text:open.length+' to fix, '+fixed.length+' fixed. Bars show what is still open.'}));
+  BUCKETS.forEach((r,i)=>{const f=h('i');f.style.width=(counts[i]/max*100)+'%';bars.append(h('div',{class:'bar'},h('span',{text:r}),h('span',{class:'tr'},f),h('span',{text:String(counts[i])})))});
+  open.concat(fixed).forEach(e=>{
+    const cb=h('input',{type:'checkbox','.checked':!!e.fixed,'aria-label':'Mark fixed: '+e.chapter});
+    cb.addEventListener('change',()=>{e.fixed=cb.checked;save('sys90.errors',errors);renderErrors()});
+    const red=e.reason===BUCKETS[0]||e.reason===BUCKETS[3];
+    list.append(h('li',{class:'err'+(e.fixed?' fixed':'')+(red?' red':'')},cb,
+      h('div',{},h('p',{class:'err-main',text:e.subj+': '+e.chapter}),h('p',{class:'err-meta',text:e.reason+(e.note?'. '+e.note:'')})),
+      h('button',{type:'button',class:'link','aria-label':'Remove entry: '+e.chapter,text:'Remove',onclick:()=>{errors=errors.filter(x=>x!==e);save('sys90.errors',errors);renderErrors()}})));
+  });
+}
+function initErrors(){
+  BUCKETS.forEach(r=>$('eReason').append(h('option',{text:r})));
+  $('eReason').value=BUCKETS[0];
+  $('errForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const ch=$('eChap').value.trim(),msg=$('errMsg');
+    if(!ch){msg.className='msg bad';msg.textContent='Add the chapter name.';return}
+    errors.push({subj:$('eSubj').value,chapter:ch,reason:$('eReason').value,note:$('eNote').value.trim(),fixed:false,ts:Date.now()});
+    save('sys90.errors',errors);$('eChap').value='';$('eNote').value='';msg.className='msg';msg.textContent='Added to the error log.';renderErrors();
+  });
+  renderErrors();
+}
+
+function renderCards(){
+  const box=$('cardList');box.replaceChildren();
+  $('cardCount').textContent=cards.length?cards.length+' card'+(cards.length>1?'s':'')+' in your stack. Aim for 4 new cards a day, 8 to 10 minutes.':'No cards yet. Make your first one while studying today\'s chapter.';
+  cards.slice().reverse().forEach(c=>box.append(h('details',{class:'card'},
+    h('summary',{},c.title,' ',h('span',{class:'s',text:c.subj})),
+    h('p',{text:c.words}),c.ex?h('p',{text:'Example: '+c.ex}):null,c.dia?h('p',{class:'err-meta',text:'Diagram: '+c.dia}):null,
+    h('button',{type:'button',class:'link',text:'Remove card','aria-label':'Remove card: '+c.title,onclick:()=>{cards=cards.filter(x=>x!==c);save('sys90.cards',cards);renderCards()}}))));
+}
+function initCards(){
+  $('cardForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const t=$('cTitle').value.trim(),w=$('cWords').value.trim(),msg=$('cardMsg');
+    if(!t||!w){msg.className='msg bad';msg.textContent='Add a title and the concept in your own words.';return}
+    cards.push({subj:$('cSubj').value,title:t,words:w,ex:$('cEx').value.trim(),dia:$('cDia').value.trim(),ts:Date.now()});
+    save('sys90.cards',cards);['cTitle','cWords','cEx','cDia'].forEach(i=>{$(i).value=''});
+    msg.className='msg';msg.textContent='Card added.';renderCards();
+  });
+  renderCards();
+}
+
+let board=load('sys90.board',[]);board=Array.isArray(board)?board.filter(b=>b&&/^\d{4}-\d{2}-\d{2}$/.test(b.date)&&Number.isFinite(b.marks)):[];
+const BREASONS=['Concept gap','Calculation slip','Steps not written','Time pressure'];
+function renderBoard(){
+  const t=$('boardTable'),d=board.slice().sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:(a.ts||0)-(b.ts||0)),ins=$('boardInsight');t.replaceChildren();
+  if(!d.length){ins.textContent='Your CBSE paper scores appear here once you save one.';return}
+  const l=d[d.length-1];let x='Latest: '+l.marks+' out of 80.';
+  if(d.length>1){const df=l.marks-d[d.length-2].marks;x+=df===0?' Level with the previous paper.':(df>0?' Up ':' Down ')+Math.abs(df)+' from the previous paper.'}
+  ins.textContent=x;
+  t.append(h('thead',{},h('tr',{},['Date','Type','Marks /80','Main loss',''].map(y=>h('th',{text:y})))));
+  const bd=h('tbody');
+  d.slice().reverse().forEach(b=>bd.append(h('tr',{},h('td',{text:shortDate(b.date)}),h('td',{text:b.type}),h('td',{class:'total',text:String(b.marks)}),h('td',{text:b.reason||''}),
+    h('td',{},h('button',{type:'button',class:'link','aria-label':'Remove the paper from '+shortDate(b.date),text:'Remove',onclick:()=>{board=board.filter(z=>z!==b);save('sys90.board',board);renderBoard()}})))));
+  t.append(bd);
+}
+function initBoard(){
+  BREASONS.forEach(r=>$('bReason').append(h('option',{text:r})));
+  $('bDate').value=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+  $('boardForm').addEventListener('submit',e=>{
+    e.preventDefault();
+    const msg=$('boardMsg'),iso=$('bDate').value,v=$('bMarks').value===''?NaN:+$('bMarks').value;
+    msg.className='msg bad';
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(iso)){msg.textContent='Pick the date.';return}
+    if(!Number.isInteger(v)||v<0||v>80){msg.textContent='Enter marks as a whole number from 0 to 80.';return}
+    board.push({date:iso,marks:v,type:$('bType').value,reason:$('bReason').value,ts:Date.now()});save('sys90.board',board);
+    $('bMarks').value='';msg.className='msg';msg.textContent='Saved. '+v+' out of 80.';renderBoard();
+  });
+  renderBoard();
+}
+$('prev').addEventListener('click',()=>selectDay(selected-1));
+$('next').addEventListener('click',()=>selectDay(selected+1));
+$('goToday').addEventListener('click',()=>selectDay(clamp(todayNum,1,TOTAL)));
+let armed=false;
+$('resetBtn').addEventListener('click',()=>{
+  const b=$('resetBtn');
+  if(!armed){armed=true;b.textContent='Click again to clear every tick';setTimeout(()=>{armed=false;b.textContent='Clear all task ticks'},4000);return}
+  armed=false;done={};save('sys90.done',done);b.textContent='Clear all task ticks';
+  for(let n=1;n<=TOTAL;n++)paintBubble(n);renderPanel();renderStats();
+});
+buildSheet();renderPanel();renderStats();renderCountdown();renderCountdown2();renderPhases();initMocks();initErrors();initCards();initBoard();
+})();
+</script>
+</body>
+</html>

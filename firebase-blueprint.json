@@ -1,0 +1,128 @@
+{
+  "entities": {
+    "ConnectionTest": {
+      "title": "ConnectionTest",
+      "description": "Firestore connection validation probe",
+      "type": "object",
+      "properties": {
+        "status": { "type": "string" }
+      }
+    },
+    "UserProgress": {
+      "title": "UserProgress",
+      "description": "User daily study tracker ticks and completion state",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "done": { "type": "object" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["done"]
+    },
+    "MockTest": {
+      "title": "MockTest",
+      "description": "Logged JEE Mock tests and 4-bucket results",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "date": { "type": "string", "maxLength": 10 },
+        "p": { "type": "number" },
+        "c": { "type": "number" },
+        "m": { "type": "number" },
+        "b": { "type": "array" },
+        "ts": { "type": "number" }
+      },
+      "required": ["date", "p", "c", "m", "ts"]
+    },
+    "ErrorLogItem": {
+      "title": "ErrorLogItem",
+      "description": "Question error log entry with analysis bucket",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "subj": { "type": "string", "maxLength": 50 },
+        "chapter": { "type": "string", "maxLength": 100 },
+        "reason": { "type": "string", "maxLength": 50 },
+        "note": { "type": "string", "maxLength": 200 },
+        "fixed": { "type": "boolean" },
+        "ts": { "type": "number" }
+      },
+      "required": ["subj", "chapter", "reason", "fixed", "ts"]
+    },
+    "Flashcard": {
+      "title": "Flashcard",
+      "description": "Spaced repetition concept flashcard",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "subj": { "type": "string", "maxLength": 50 },
+        "title": { "type": "string", "maxLength": 100 },
+        "words": { "type": "string", "maxLength": 300 },
+        "ex": { "type": "string", "maxLength": 200 },
+        "dia": { "type": "string", "maxLength": 150 },
+        "ts": { "type": "number" }
+      },
+      "required": ["subj", "title", "words", "ts"]
+    },
+    "BoardPaper": {
+      "title": "BoardPaper",
+      "description": "CBSE Class 12 Maths board sample or test paper score",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "date": { "type": "string", "maxLength": 10 },
+        "marks": { "type": "number" },
+        "type": { "type": "string", "maxLength": 50 },
+        "reason": { "type": "string", "maxLength": 50 },
+        "ts": { "type": "number" }
+      },
+      "required": ["date", "marks", "type", "ts"]
+    }
+  },
+  "firestore": {
+    "/test/connection": {
+      "schema": "ConnectionTest",
+      "description": "Probe path to validate Firestore client connection"
+    },
+    "/study_trackers/{trackerId}/progress/{progressId}": {
+      "schema": "UserProgress",
+      "description": "Cross-browser synced progress state for study trackers"
+    },
+    "/study_trackers/{trackerId}/mocks/{mockId}": {
+      "schema": "MockTest",
+      "description": "Cross-browser synced JEE Mock test logs"
+    },
+    "/study_trackers/{trackerId}/errors/{errorId}": {
+      "schema": "ErrorLogItem",
+      "description": "Cross-browser synced error log items"
+    },
+    "/study_trackers/{trackerId}/cards/{cardId}": {
+      "schema": "Flashcard",
+      "description": "Cross-browser synced flashcards"
+    },
+    "/study_trackers/{trackerId}/board/{boardId}": {
+      "schema": "BoardPaper",
+      "description": "Cross-browser synced CBSE board paper records"
+    },
+    "/users/{userId}/progress/{progressId}": {
+      "schema": "UserProgress",
+      "description": "User completion progress state across all 129 days"
+    },
+    "/users/{userId}/mocks/{mockId}": {
+      "schema": "MockTest",
+      "description": "JEE Mock test scores and four buckets analysis"
+    },
+    "/users/{userId}/errors/{errorId}": {
+      "schema": "ErrorLogItem",
+      "description": "Error items categorized into four buckets"
+    },
+    "/users/{userId}/cards/{cardId}": {
+      "schema": "Flashcard",
+      "description": "Subject flashcards and concept summaries"
+    },
+    "/users/{userId}/board/{boardId}": {
+      "schema": "BoardPaper",
+      "description": "CBSE Class 12 Maths sample paper scores and loss categories"
+    }
+  }
+}
