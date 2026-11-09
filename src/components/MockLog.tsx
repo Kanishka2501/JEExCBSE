@@ -26,10 +26,10 @@ export const MockLog: React.FC<MockLogProps> = ({
 
   const [msg, setMsg] = useState<{ text: string; bad?: boolean } | null>(null);
 
-  const total = (m: MockEntry) => m.p + m.c + m.m;
+  const total = (m: MockEntry) => (Number(m.p) || 0) + (Number(m.c) || 0) + (Number(m.m) || 0);
 
   const sortedMocks = [...mocks].sort((a, b) =>
-    a.date < b.date ? -1 : a.date > b.date ? 1 : (a.ts || 0) - (b.ts || 0)
+    (a.date || '') < (b.date || '') ? -1 : (a.date || '') > (b.date || '') ? 1 : (a.ts || 0) - (b.ts || 0)
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -123,7 +123,8 @@ export const MockLog: React.FC<MockLogProps> = ({
     insightText = s;
   }
 
-  const shortDate = (iso: string) => {
+  const shortDate = (iso?: string) => {
+    if (!iso) return '-';
     const d = new Date(iso + 'T00:00:00');
     return formatDate(d, { day: 'numeric', month: 'short' });
   };

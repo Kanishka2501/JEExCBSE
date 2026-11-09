@@ -1,532 +1,529 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { CloudCheck } from 'lucide-react';
-import { Header } from './components/Header';
-import { DayView } from './components/DayView';
-import { AnswerSheet } from './components/AnswerSheet';
-import { FiveDSystem } from './components/FiveDSystem';
-import { PhaseSplit } from './components/PhaseSplit';
-import { StudyRhythm } from './components/StudyRhythm';
-import { StudyMaterial } from './components/StudyMaterial';
-import { BoardTrack } from './components/BoardTrack';
-import { MockLog } from './components/MockLog';
-import { ErrorLog } from './components/ErrorLog';
-import { FlashcardStack } from './components/FlashcardStack';
-import { Footer } from './components/Footer';
-
+import { auth, loginWithGoogle, logoutUser, testConnection } from './firebase';
 import {
-  ALL_DAYS,
-  TOTAL_DAYS,
-  clamp,
-  dayNum,
-} from './data/curriculum';
-import {
-  loadFromStorage,
-  saveToStorage,
-  AppStateData,
-} from './utils/storage';
-import { MockEntry, ErrorEntry, CardEntry, BoardEntry } from './types';
-import {
-  auth,
-  loginWithGoogle,
-  logoutUser,
-  testConnection,
-} from './firebase';
+  ChapterItem,
+  CBSEChapterItem,
+  DailyMissionTask,
+  DailyReviewData,
+  ExamSettings,
+  JEEXAppState,
+  MockTestEntry,
+  StudySession,
+  TestErrorItem,
+} from './types';
+import { DEFAULT_APP_STATE, loadFromStorage, saveToStorage } from './utils/storage';
 import {
   DEFAULT_TRACKER_ID,
-  subscribeToProgress,
-  saveProgress,
-  subscribeToMocks,
-  saveMock,
-  deleteMock,
-  subscribeToErrors,
-  saveError,
-  updateErrorFixed,
-  deleteError,
-  subscribeToCards,
-  saveCard,
-  deleteCard,
-  subscribeToBoard,
-  saveBoard,
-  deleteBoard,
+  subscribeToJEEXState,
+  saveJEEXState,
 } from './utils/cloudSync';
+import { getISTDateString } from './utils/istDate';
+import { generateDailyMissions } from './utils/plannerEngine';
+
+// Components
+import { Navigation, ActiveTab } from './components/Navigation';
+import { DashboardView } from './components/DashboardView';
+import { SyllabusView } from './components/SyllabusView';
+import { DailyPlannerView } from './components/DailyPlannerView';
+import { TestsAndPYQView } from './components/TestsAndPYQView';
+import { CBSEMathsView } from './components/CBSEMathsView';
+import { AnalyticsView } from './components/AnalyticsView';
+import { SettingsView } from './components/SettingsView';
+import { ChapterWorkflowModal } from './components/ChapterWorkflowModal';
+import { StudyTimerModal } from './components/StudyTimerModal';
+import { DailyReviewModal } from './components/DailyReviewModal';
+import { BacklogModal } from './components/BacklogModal';
+
+const STORAGE_KEY = 'jeex_app_state_v2';
 
 export default function App() {
-  // Test connection on boot per Firebase guidelines
+  // Test Firebase connection on mount
   useEffect(() => {
     testConnection();
   }, []);
 
-  // Theme state
-  const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>(() => {
-    return loadFromStorage<'light' | 'dark' | 'auto'>('sys90.theme', 'auto');
-  });
-
-  useEffect(() => {
-    if (theme === 'auto') {
-      document.documentElement.removeAttribute('data-theme');
-    } else {
-      document.documentElement.setAttribute('data-theme', theme);
-    }
-    saveToStorage('sys90.theme', theme);
-  }, [theme]);
-
-  // Auth & Cloud Sync
+  // Auth State
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isSyncing, setIsSyncing] = useState<boolean>(true);
-  const [syncNotice, setSyncNotice] = useState<string | null>(null);
-
-  // Active sync target: either user's UID (if signed in) or global 'main' shared tracker
+  const [isCloudSynced, setIsCloudSynced] = useState<boolean>(true);
   const activeSyncId = currentUser ? currentUser.uid : DEFAULT_TRACKER_ID;
   const isUserTarget = !!currentUser;
 
-  // Tracking flags to seed cloud only once if cloud was freshly initialized
-  const hasInitializedProgress = useRef(false);
-  const hasInitializedMocks = useRef(false);
-  const hasInitializedErrors = useRef(false);
-  const hasInitializedCards = useRef(false);
-  const hasInitializedBoard = useRef(false);
+  // Navigation State
+  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
 
-  // Current day and selected day
-  const today = new Date();
-  const actualTodayNum = dayNum(today);
-  const initialSelectedDay = clamp(actualTodayNum, 1, TOTAL_DAYS);
+  // Core App State
+  const [state, setState] = useState<JEEXAppState>(() => {
+    const local = loadFromStorage<JEEXAppState>(STORAGE_KEY, DEFAULT_APP_STATE);
+    const today = getISTDateString();
+    // Ensure today has initial daily missions if empty
+    if (!local.dailyTasks[today] || local.dailyTasks[today].length === 0) {
+      local.dailyTasks[today] = generateDailyMissions(
+        local.chapters,
+        local.cbseChapters,
+        today
+      );
+    }
+    return local;
+  });
 
-  const [selectedDayNum, setSelectedDayNum] = useState<number>(() => initialSelectedDay);
+  // Modal States
+  const [selectedChapterForWorkflow, setSelectedChapterForWorkflow] = useState<ChapterItem | null>(null);
+  const [isTimerModalOpen, setIsTimerModalOpen] = useState(false);
+  const [timerSubject, setTimerSubject] = useState<any>('Mathematics');
+  const [timerChapterId, setTimerChapterId] = useState<string | undefined>(undefined);
+  const [isDailyReviewOpen, setIsDailyReviewOpen] = useState(false);
+  const [isBacklogModalOpen, setIsBacklogModalOpen] = useState(false);
 
-  // Core application persistent state
-  const [done, setDone] = useState<Record<string, boolean>>(() =>
-    loadFromStorage<Record<string, boolean>>('sys90.done', {})
-  );
+  const hasSeededCloud = useRef(false);
 
-  const [mocks, setMocks] = useState<MockEntry[]>(() =>
-    loadFromStorage<MockEntry[]>('sys90.mocks', [])
-  );
-
-  const [errors, setErrors] = useState<ErrorEntry[]>(() =>
-    loadFromStorage<ErrorEntry[]>('sys90.errors', [])
-  );
-
-  const [cards, setCards] = useState<CardEntry[]>(() =>
-    loadFromStorage<CardEntry[]>('sys90.cards', [])
-  );
-
-  const [boardEntries, setBoardEntries] = useState<BoardEntry[]>(() =>
-    loadFromStorage<BoardEntry[]>('sys90.board', [])
-  );
-
-  // Auth Listener
+  // Auth listener
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-    });
-    return () => unsubscribeAuth();
+    const unsub = onAuthStateChanged(auth, (u) => setCurrentUser(u));
+    return () => unsub();
   }, []);
 
-  // Universal Real-Time Cloud Sync: connects and synchronizes across all browsers
+  // Universal Real-time Firestore Cloud Sync
   useEffect(() => {
-    setIsSyncing(true);
-
-    // 1. Progress sync
-    const unsubProgress = subscribeToProgress(activeSyncId, isUserTarget, (cloudDone) => {
-      if (!hasInitializedProgress.current) {
-        hasInitializedProgress.current = true;
-        const localDone = loadFromStorage<Record<string, boolean>>('sys90.done', {});
-        // If cloud was empty but user had local ticks before sync, seed cloud once
-        if (Object.keys(cloudDone).length === 0 && Object.keys(localDone).length > 0) {
-          saveProgress(activeSyncId, isUserTarget, localDone);
-          setDone(localDone);
-          setIsSyncing(false);
-          return;
-        }
+    setIsCloudSynced(false);
+    const unsub = subscribeToJEEXState(activeSyncId, isUserTarget, (cloudState) => {
+      setIsCloudSynced(true);
+      if (cloudState && Object.keys(cloudState).length > 0) {
+        setState((prev) => {
+          const merged: JEEXAppState = {
+            ...prev,
+            ...cloudState,
+            settings: { ...prev.settings, ...(cloudState.settings || {}) },
+            chapters: cloudState.chapters || prev.chapters,
+            cbseChapters: cloudState.cbseChapters || prev.cbseChapters,
+            sessions: cloudState.sessions || prev.sessions,
+            dailyTasks: cloudState.dailyTasks || prev.dailyTasks,
+            dailyReviews: cloudState.dailyReviews || prev.dailyReviews,
+            mocks: cloudState.mocks || prev.mocks,
+            errors: cloudState.errors || prev.errors,
+            backlogTasks: cloudState.backlogTasks || prev.backlogTasks,
+          };
+          saveToStorage(STORAGE_KEY, merged);
+          return merged;
+        });
+      } else if (!hasSeededCloud.current) {
+        // Seed initial state to cloud if empty
+        hasSeededCloud.current = true;
+        saveJEEXState(activeSyncId, isUserTarget, state);
       }
-      setDone(cloudDone);
-      saveToStorage('sys90.done', cloudDone);
-      setIsSyncing(false);
     });
 
-    // 2. Mocks sync
-    const unsubMocks = subscribeToMocks(activeSyncId, isUserTarget, (cloudMocks) => {
-      if (!hasInitializedMocks.current) {
-        hasInitializedMocks.current = true;
-        const localMocks = loadFromStorage<MockEntry[]>('sys90.mocks', []);
-        if (cloudMocks.length === 0 && localMocks.length > 0) {
-          localMocks.forEach((m) => saveMock(activeSyncId, isUserTarget, m));
-          setMocks(localMocks);
-          return;
-        }
-      }
-      setMocks(cloudMocks);
-      saveToStorage('sys90.mocks', cloudMocks);
-    });
-
-    // 3. Errors sync
-    const unsubErrors = subscribeToErrors(activeSyncId, isUserTarget, (cloudErrors) => {
-      if (!hasInitializedErrors.current) {
-        hasInitializedErrors.current = true;
-        const localErrors = loadFromStorage<ErrorEntry[]>('sys90.errors', []);
-        if (cloudErrors.length === 0 && localErrors.length > 0) {
-          localErrors.forEach((e) => saveError(activeSyncId, isUserTarget, e));
-          setErrors(localErrors);
-          return;
-        }
-      }
-      setErrors(cloudErrors);
-      saveToStorage('sys90.errors', cloudErrors);
-    });
-
-    // 4. Cards sync
-    const unsubCards = subscribeToCards(activeSyncId, isUserTarget, (cloudCards) => {
-      if (!hasInitializedCards.current) {
-        hasInitializedCards.current = true;
-        const localCards = loadFromStorage<CardEntry[]>('sys90.cards', []);
-        if (cloudCards.length === 0 && localCards.length > 0) {
-          localCards.forEach((c) => saveCard(activeSyncId, isUserTarget, c));
-          setCards(localCards);
-          return;
-        }
-      }
-      setCards(cloudCards);
-      saveToStorage('sys90.cards', cloudCards);
-    });
-
-    // 5. Board sync
-    const unsubBoard = subscribeToBoard(activeSyncId, isUserTarget, (cloudBoard) => {
-      if (!hasInitializedBoard.current) {
-        hasInitializedBoard.current = true;
-        const localBoard = loadFromStorage<BoardEntry[]>('sys90.board', []);
-        if (cloudBoard.length === 0 && localBoard.length > 0) {
-          localBoard.forEach((b) => saveBoard(activeSyncId, isUserTarget, b));
-          setBoardEntries(localBoard);
-          return;
-        }
-      }
-      setBoardEntries(cloudBoard);
-      saveToStorage('sys90.board', cloudBoard);
-    });
-
-    return () => {
-      unsubProgress();
-      unsubMocks();
-      unsubErrors();
-      unsubCards();
-      unsubBoard();
-    };
+    return () => unsub();
   }, [activeSyncId, isUserTarget]);
 
-  // Task tick handler (checked and unchecked cleanly synced)
+  // Central state update function that updates local and persists to cloud
+  const updateStateAndSync = useCallback(
+    (updater: (prev: JEEXAppState) => JEEXAppState) => {
+      setState((prev) => {
+        const next = updater(prev);
+        saveToStorage(STORAGE_KEY, next);
+        saveJEEXState(activeSyncId, isUserTarget, next);
+        return next;
+      });
+    },
+    [activeSyncId, isUserTarget]
+  );
+
+  // Handlers
+  const todayStr = getISTDateString();
+  const todayTasks = state.dailyTasks[todayStr] || [];
+
   const handleToggleTask = useCallback(
-    (day: number, taskId: string) => {
-      setDone((prev) => {
-        const next = { ...prev };
-        const key = `${day}:${taskId}`;
-        if (next[key]) {
-          delete next[key];
-        } else {
-          next[key] = true;
-        }
-        saveToStorage('sys90.done', next);
-        saveProgress(activeSyncId, isUserTarget, next);
-        return next;
-      });
-    },
-    [activeSyncId, isUserTarget]
-  );
-
-  const handleClearAllTicks = useCallback(() => {
-    setDone({});
-    saveToStorage('sys90.done', {});
-    saveProgress(activeSyncId, isUserTarget, {});
-  }, [activeSyncId, isUserTarget]);
-
-  const handleAddMock = useCallback(
-    (mock: MockEntry) => {
-      setMocks((prev) => {
-        const next = [...prev, mock];
-        saveToStorage('sys90.mocks', next);
-        return next;
-      });
-      saveMock(activeSyncId, isUserTarget, mock);
-    },
-    [activeSyncId, isUserTarget]
-  );
-
-  const handleRemoveMock = useCallback(
-    (mockToRemove: MockEntry) => {
-      setMocks((prev) => {
-        const next = prev.filter(
-          (m) =>
-            m !== mockToRemove &&
-            !(m.ts && mockToRemove.ts && m.ts === mockToRemove.ts)
+    (taskId: string, targetDate = todayStr) => {
+      updateStateAndSync((prev) => {
+        const dateTasks = prev.dailyTasks[targetDate] || [];
+        const updatedTasks = dateTasks.map((t) =>
+          t.id === taskId
+            ? {
+                ...t,
+                completed: !t.completed,
+                completedAt: !t.completed ? new Date().toISOString() : undefined,
+              }
+            : t
         );
-        saveToStorage('sys90.mocks', next);
-        return next;
+        return {
+          ...prev,
+          dailyTasks: {
+            ...prev.dailyTasks,
+            [targetDate]: updatedTasks,
+          },
+        };
       });
-      deleteMock(activeSyncId, isUserTarget, mockToRemove);
     },
-    [activeSyncId, isUserTarget]
+    [todayStr, updateStateAndSync]
   );
 
-  const handleAddError = useCallback(
-    (err: ErrorEntry) => {
-      setErrors((prev) => {
-        const next = [...prev, err];
-        saveToStorage('sys90.errors', next);
-        return next;
+  const handleAddTask = useCallback(
+    (targetDate: string, task: DailyMissionTask) => {
+      updateStateAndSync((prev) => {
+        const dateTasks = prev.dailyTasks[targetDate] || [];
+        return {
+          ...prev,
+          dailyTasks: {
+            ...prev.dailyTasks,
+            [targetDate]: [...dateTasks, task],
+          },
+        };
       });
-      saveError(activeSyncId, isUserTarget, err);
     },
-    [activeSyncId, isUserTarget]
+    [updateStateAndSync]
   );
 
-  const handleToggleErrorFixed = useCallback(
-    (errToToggle: ErrorEntry) => {
-      const updatedFixed = !errToToggle.fixed;
-      setErrors((prev) => {
-        const next = prev.map((e) =>
-          e === errToToggle || (e.ts && errToToggle.ts && e.ts === errToToggle.ts)
-            ? { ...e, fixed: updatedFixed }
-            : e
-        );
-        saveToStorage('sys90.errors', next);
-        return next;
-      });
-      updateErrorFixed(activeSyncId, isUserTarget, {
-        ...errToToggle,
-        fixed: updatedFixed,
+  const handleStartSession = useCallback(
+    (subject?: string, chapterId?: string) => {
+      if (subject) setTimerSubject(subject as any);
+      if (chapterId) {
+        setTimerChapterId(chapterId);
+      } else if (subject) {
+        const ch = state.chapters.find((c) => c.subject === subject);
+        if (ch) setTimerChapterId(ch.id);
+      }
+      setIsTimerModalOpen(true);
+    },
+    [state.chapters]
+  );
+
+  const handleCompleteSession = useCallback(
+    (session: StudySession) => {
+      updateStateAndSync((prev) => {
+        // 1. Append session
+        const nextSessions = [...prev.sessions, session];
+
+        // 2. Increment chapter actualHours
+        const nextChapters = prev.chapters.map((ch) => {
+          if (ch.id === session.chapterId) {
+            const addedHours = (session.netFocusedMinutes || session.durationMinutes) / 60;
+            return {
+              ...ch,
+              actualHours: Number((ch.actualHours + addedHours).toFixed(1)),
+            };
+          }
+          return ch;
+        });
+
+        return {
+          ...prev,
+          sessions: nextSessions,
+          chapters: nextChapters,
+        };
       });
     },
-    [activeSyncId, isUserTarget]
+    [updateStateAndSync]
+  );
+
+  const handleUpdateChapter = useCallback(
+    (updatedChapter: ChapterItem) => {
+      updateStateAndSync((prev) => ({
+        ...prev,
+        chapters: prev.chapters.map((c) => (c.id === updatedChapter.id ? updatedChapter : c)),
+      }));
+      setSelectedChapterForWorkflow(updatedChapter);
+    },
+    [updateStateAndSync]
+  );
+
+  const handleUpdateCBSEChapter = useCallback(
+    (updatedCBSE: CBSEChapterItem) => {
+      updateStateAndSync((prev) => ({
+        ...prev,
+        cbseChapters: prev.cbseChapters.map((c) => (c.id === updatedCBSE.id ? updatedCBSE : c)),
+      }));
+    },
+    [updateStateAndSync]
+  );
+
+  const handleAddErrorItem = useCallback(
+    (errorData: {
+      chapterId: string;
+      chapterName: string;
+      subject: any;
+      questionDetails: string;
+      category: any;
+      correctAnswerSolution: string;
+      myMistake: string;
+    }) => {
+      const newErr: TestErrorItem = {
+        id: `err_${Date.now()}`,
+        ...errorData,
+        reAttemptSolved: false,
+        timestamp: Date.now(),
+      };
+
+      updateStateAndSync((prev) => ({
+        ...prev,
+        errors: [newErr, ...prev.errors],
+      }));
+    },
+    [updateStateAndSync]
+  );
+
+  const handleToggleErrorSolved = useCallback(
+    (errorId: string) => {
+      updateStateAndSync((prev) => ({
+        ...prev,
+        errors: prev.errors.map((e) =>
+          e.id === errorId ? { ...e, reAttemptSolved: !e.reAttemptSolved } : e
+        ),
+      }));
+    },
+    [updateStateAndSync]
   );
 
   const handleRemoveError = useCallback(
-    (errToRemove: ErrorEntry) => {
-      setErrors((prev) => {
-        const next = prev.filter(
-          (e) =>
-            e !== errToRemove &&
-            !(e.ts && errToRemove.ts && e.ts === errToRemove.ts)
-        );
-        saveToStorage('sys90.errors', next);
-        return next;
-      });
-      deleteError(activeSyncId, isUserTarget, errToRemove);
+    (errorId: string) => {
+      updateStateAndSync((prev) => ({
+        ...prev,
+        errors: prev.errors.filter((e) => e.id !== errorId),
+      }));
     },
-    [activeSyncId, isUserTarget]
+    [updateStateAndSync]
   );
 
-  const handleAddCard = useCallback(
-    (card: CardEntry) => {
-      setCards((prev) => {
-        const next = [...prev, card];
-        saveToStorage('sys90.cards', next);
-        return next;
-      });
-      saveCard(activeSyncId, isUserTarget, card);
+  const handleAddMock = useCallback(
+    (mock: MockTestEntry) => {
+      updateStateAndSync((prev) => ({
+        ...prev,
+        mocks: [mock, ...prev.mocks],
+      }));
     },
-    [activeSyncId, isUserTarget]
+    [updateStateAndSync]
   );
 
-  const handleRemoveCard = useCallback(
-    (cardToRemove: CardEntry) => {
-      setCards((prev) => {
-        const next = prev.filter(
-          (c) =>
-            c !== cardToRemove &&
-            !(c.ts && cardToRemove.ts && c.ts === cardToRemove.ts)
-        );
-        saveToStorage('sys90.cards', next);
-        return next;
-      });
-      deleteCard(activeSyncId, isUserTarget, cardToRemove);
+  const handleRemoveMock = useCallback(
+    (mockId: string) => {
+      updateStateAndSync((prev) => ({
+        ...prev,
+        mocks: prev.mocks.filter((m) => m.id !== mockId),
+      }));
     },
-    [activeSyncId, isUserTarget]
+    [updateStateAndSync]
   );
 
-  const handleAddBoardEntry = useCallback(
-    (entry: BoardEntry) => {
-      setBoardEntries((prev) => {
-        const next = [...prev, entry];
-        saveToStorage('sys90.board', next);
-        return next;
-      });
-      saveBoard(activeSyncId, isUserTarget, entry);
+  const handleSaveReview = useCallback(
+    (review: DailyReviewData) => {
+      updateStateAndSync((prev) => ({
+        ...prev,
+        dailyReviews: {
+          ...prev.dailyReviews,
+          [review.date]: review,
+        },
+      }));
     },
-    [activeSyncId, isUserTarget]
+    [updateStateAndSync]
   );
 
-  const handleRemoveBoardEntry = useCallback(
-    (entryToRemove: BoardEntry) => {
-      setBoardEntries((prev) => {
-        const next = prev.filter(
-          (b) =>
-            b !== entryToRemove &&
-            !(b.ts && entryToRemove.ts && b.ts === entryToRemove.ts)
-        );
-        saveToStorage('sys90.board', next);
-        return next;
-      });
-      deleteBoard(activeSyncId, isUserTarget, entryToRemove);
+  const handleApplyRedistribution = useCallback(
+    (
+      updatedTasksByDate: Record<string, DailyMissionTask[]>,
+      remainingBacklog: DailyMissionTask[]
+    ) => {
+      updateStateAndSync((prev) => ({
+        ...prev,
+        dailyTasks: updatedTasksByDate,
+        backlogTasks: remainingBacklog,
+      }));
     },
-    [activeSyncId, isUserTarget]
+    [updateStateAndSync]
+  );
+
+  const handleRemoveBacklogTask = useCallback(
+    (taskId: string) => {
+      updateStateAndSync((prev) => ({
+        ...prev,
+        backlogTasks: prev.backlogTasks.filter((t) => t.id !== taskId),
+      }));
+    },
+    [updateStateAndSync]
+  );
+
+  const handleUpdateSettings = useCallback(
+    (newSettings: ExamSettings) => {
+      updateStateAndSync((prev) => ({
+        ...prev,
+        settings: newSettings,
+      }));
+    },
+    [updateStateAndSync]
   );
 
   const handleImportBackup = useCallback(
-    (data: AppStateData) => {
-      setDone(data.done);
-      setMocks(data.mocks);
-      setErrors(data.errors);
-      setCards(data.cards);
-      setBoardEntries(data.board);
-
-      saveToStorage('sys90.done', data.done);
-      saveToStorage('sys90.mocks', data.mocks);
-      saveToStorage('sys90.errors', data.errors);
-      saveToStorage('sys90.cards', data.cards);
-      saveToStorage('sys90.board', data.board);
-
-      // Save to cloud
-      saveProgress(activeSyncId, isUserTarget, data.done);
-      data.mocks.forEach((m) => saveMock(activeSyncId, isUserTarget, m));
-      data.errors.forEach((e) => saveError(activeSyncId, isUserTarget, e));
-      data.cards.forEach((c) => saveCard(activeSyncId, isUserTarget, c));
-      data.board.forEach((b) => saveBoard(activeSyncId, isUserTarget, b));
+    (imported: JEEXAppState) => {
+      updateStateAndSync(() => imported);
     },
-    [activeSyncId, isUserTarget]
+    [updateStateAndSync]
   );
 
-  const handleSignIn = async () => {
-    const res = await loginWithGoogle();
-    if (res.error) {
-      setSyncNotice(res.error);
-      setTimeout(() => setSyncNotice(null), 5000);
-    }
-  };
-
-  const handleSignOut = async () => {
-    await logoutUser();
-  };
-
-  // Keyboard navigation for days
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const activeTag = document.activeElement?.tagName.toLowerCase();
-      if (
-        activeTag === 'input' ||
-        activeTag === 'textarea' ||
-        activeTag === 'select'
-      ) {
-        return;
-      }
-      if (e.key === 'ArrowLeft') {
-        setSelectedDayNum((prev) => clamp(prev - 1, 1, TOTAL_DAYS));
-      } else if (e.key === 'ArrowRight') {
-        setSelectedDayNum((prev) => clamp(prev + 1, 1, TOTAL_DAYS));
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const selectedDayData = ALL_DAYS[selectedDayNum] || ALL_DAYS[1]!;
+  const handleResetCycle = useCallback(() => {
+    updateStateAndSync(() => {
+      const fresh = { ...DEFAULT_APP_STATE };
+      const today = getISTDateString();
+      fresh.dailyTasks[today] = generateDailyMissions(fresh.chapters, fresh.cbseChapters, today);
+      return fresh;
+    });
+  }, [updateStateAndSync]);
 
   return (
-    <div className="min-h-screen text-[var(--ink)] flex flex-col font-sans-instrument antialiased">
-      <Header
-        appState={{ done, mocks, errors, cards, board: boardEntries }}
-        onImportBackup={handleImportBackup}
-        theme={theme}
-        onThemeChange={setTheme}
-        currentUser={currentUser}
-        isSyncing={isSyncing}
-        onSignIn={handleSignIn}
-        onSignOut={handleSignOut}
+    <div className="min-h-screen bg-[#080B1A] text-slate-100 flex flex-col font-sans selection:bg-violet-600/30 selection:text-cyan-200">
+      {/* Top Header & Navigation */}
+      <Navigation
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onStartSession={() => handleStartSession()}
+        prepStartDate={state.settings.prepStartDate}
+        isCloudSynced={isCloudSynced}
       />
 
-      {/* Universal Cloud Sync Status Banner */}
-      <div className="bg-emerald-500/10 border-b border-emerald-500/20 py-2 px-4 text-center text-xs text-[var(--ink)] flex flex-wrap items-center justify-center gap-2">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-        </span>
-        <CloudCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-        <span>
-          <strong>Cross-Browser Cloud Sync Active:</strong> Progress is automatically saved in the cloud. Open this URL on your phone or any other browser to see and update the exact same progress in real time!
-        </span>
-      </div>
+      {/* Main Content Area */}
+      <main className="flex-1 pb-16">
+        {activeTab === 'dashboard' && (
+          <DashboardView
+            settings={state.settings}
+            chapters={state.chapters}
+            todayTasks={todayTasks}
+            sessions={state.sessions}
+            backlogTasks={state.backlogTasks}
+            onToggleTask={(id) => handleToggleTask(id)}
+            onStartSession={handleStartSession}
+            onOpenReview={() => setIsDailyReviewOpen(true)}
+            onOpenBacklogManager={() => setIsBacklogModalOpen(true)}
+            onNavigateTab={setActiveTab}
+          />
+        )}
 
-      {syncNotice && (
-        <div className="bg-amber-500/15 border-b border-amber-500/25 py-2 px-4 text-center text-xs text-[var(--ink)] flex items-center justify-center gap-2">
-          <span>{syncNotice}</span>
-        </div>
-      )}
+        {activeTab === 'syllabus' && (
+          <SyllabusView
+            chapters={state.chapters}
+            onSelectChapter={setSelectedChapterForWorkflow}
+            onStartFocusSession={handleStartSession}
+          />
+        )}
 
-      <main className="flex-1">
-        {/* Main Workspace: Day View + Answer Sheet */}
-        <div className="max-w-[1180px] mx-auto px-[22px] py-6 md:py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_430px] gap-10 lg:gap-16 items-start">
-            <DayView
-              day={selectedDayData}
-              todayNum={actualTodayNum}
-              selectedDayNum={selectedDayNum}
-              done={done}
-              onToggleTask={handleToggleTask}
-              onSelectDay={setSelectedDayNum}
-            />
+        {activeTab === 'planner' && (
+          <DailyPlannerView
+            settings={state.settings}
+            chapters={state.chapters}
+            tasksByDate={state.dailyTasks}
+            sessions={state.sessions}
+            backlogTasks={state.backlogTasks}
+            onToggleTask={(date, id) => handleToggleTask(id, date)}
+            onAddTask={handleAddTask}
+            onStartFocusSession={handleStartSession}
+            onOpenBacklogManager={() => setIsBacklogModalOpen(true)}
+            onOpenDailyReview={() => setIsDailyReviewOpen(true)}
+          />
+        )}
 
-            <AnswerSheet
-              days={ALL_DAYS}
-              todayNum={actualTodayNum}
-              selectedDayNum={selectedDayNum}
-              done={done}
-              onSelectDay={setSelectedDayNum}
-            />
+        {activeTab === 'timer' && (
+          <div className="max-w-2xl mx-auto px-4 py-8">
+            <div className="p-8 rounded-2xl bg-[#090D22] border border-indigo-900/60 shadow-2xl text-center space-y-4">
+              <h2 className="text-xl font-black text-white">Full Focus Session Centre</h2>
+              <p className="text-xs text-slate-400">
+                Launch the lock-in timer with strict 50/10 or 90/15 exam intervals. Only genuine study hours count.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsTimerModalOpen(true)}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg hover:opacity-90 cursor-pointer"
+              >
+                Launch Focus Lock-In
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* 5D System Overview */}
-        <FiveDSystem />
+        {activeTab === 'tests' && (
+          <TestsAndPYQView
+            mocks={state.mocks}
+            errors={state.errors}
+            onAddMock={handleAddMock}
+            onRemoveMock={handleRemoveMock}
+            onAddError={(err) => handleAddErrorItem(err)}
+            onToggleErrorSolved={handleToggleErrorSolved}
+            onRemoveError={handleRemoveError}
+          />
+        )}
 
-        {/* 129 Days Phase Breakdown */}
-        <PhaseSplit />
+        {activeTab === 'cbse' && (
+          <CBSEMathsView
+            cbseChapters={state.cbseChapters}
+            onUpdateCBSEChapter={handleUpdateCBSEChapter}
+          />
+        )}
 
-        {/* Normal Study Day Schedule */}
-        <StudyRhythm />
+        {activeTab === 'analytics' && (
+          <AnalyticsView
+            settings={state.settings}
+            chapters={state.chapters}
+            sessions={state.sessions}
+            mocks={state.mocks}
+            errors={state.errors}
+          />
+        )}
 
-        {/* Fixed Study Materials Reference */}
-        <StudyMaterial />
-
-        {/* Board Maths Track */}
-        <BoardTrack
-          boardEntries={boardEntries}
-          onAddBoardEntry={handleAddBoardEntry}
-          onRemoveBoardEntry={handleRemoveBoardEntry}
-        />
-
-        {/* JEE Mock Log */}
-        <MockLog
-          mocks={mocks}
-          onAddMock={handleAddMock}
-          onRemoveMock={handleRemoveMock}
-        />
-
-        {/* Error Log */}
-        <ErrorLog
-          errors={errors}
-          onAddError={handleAddError}
-          onToggleErrorFixed={handleToggleErrorFixed}
-          onRemoveError={handleRemoveError}
-        />
-
-        {/* Flashcard Stack */}
-        <FlashcardStack
-          cards={cards}
-          onAddCard={handleAddCard}
-          onRemoveCard={handleRemoveCard}
-        />
+        {activeTab === 'settings' && (
+          <SettingsView
+            settings={state.settings}
+            fullState={state}
+            onUpdateSettings={handleUpdateSettings}
+            onImportBackup={handleImportBackup}
+            onResetCycle={handleResetCycle}
+            isCloudSynced={isCloudSynced}
+          />
+        )}
       </main>
 
-      <Footer onClearAllTicks={handleClearAllTicks} />
+      {/* Floating or Modal Windows */}
+      {selectedChapterForWorkflow && (
+        <ChapterWorkflowModal
+          chapter={selectedChapterForWorkflow}
+          isOpen={!!selectedChapterForWorkflow}
+          onClose={() => setSelectedChapterForWorkflow(null)}
+          onUpdateChapter={handleUpdateChapter}
+          onAddErrorItem={handleAddErrorItem}
+          onStartFocusSession={(subj, id) => {
+            setSelectedChapterForWorkflow(null);
+            handleStartSession(subj, id);
+          }}
+        />
+      )}
+
+      {isTimerModalOpen && (
+        <StudyTimerModal
+          isOpen={isTimerModalOpen}
+          onClose={() => setIsTimerModalOpen(false)}
+          chapters={state.chapters}
+          defaultSubject={timerSubject}
+          defaultChapterId={timerChapterId}
+          onCompleteSession={handleCompleteSession}
+        />
+      )}
+
+      {isDailyReviewOpen && (
+        <DailyReviewModal
+          isOpen={isDailyReviewOpen}
+          onClose={() => setIsDailyReviewOpen(false)}
+          settings={state.settings}
+          sessions={state.sessions}
+          onSaveReview={handleSaveReview}
+          existingReview={state.dailyReviews[todayStr]}
+        />
+      )}
+
+      {isBacklogModalOpen && (
+        <BacklogModal
+          isOpen={isBacklogModalOpen}
+          onClose={() => setIsBacklogModalOpen(false)}
+          backlogTasks={state.backlogTasks}
+          tasksByDate={state.dailyTasks}
+          onApplyRedistribution={handleApplyRedistribution}
+          onRemoveBacklogTask={handleRemoveBacklogTask}
+        />
+      )}
     </div>
   );
 }

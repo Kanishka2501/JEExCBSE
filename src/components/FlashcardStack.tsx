@@ -54,12 +54,16 @@ export const FlashcardStack: React.FC<FlashcardStackProps> = ({
     const matchesSubj = filterSubj === 'all' || c.subj === filterSubj;
     const q = searchQuery.toLowerCase().trim();
     if (!q) return matchesSubj;
+    const titleStr = (c.title || '').toLowerCase();
+    const wordsStr = typeof c.words === 'string' ? c.words.toLowerCase() : Array.isArray(c.words) ? c.words.join(' ').toLowerCase() : '';
+    const exStr = (c.ex || '').toLowerCase();
+    const diaStr = (c.dia || '').toLowerCase();
     return (
       matchesSubj &&
-      (c.title.toLowerCase().includes(q) ||
-        c.words.toLowerCase().includes(q) ||
-        (c.ex && c.ex.toLowerCase().includes(q)) ||
-        (c.dia && c.dia.toLowerCase().includes(q)))
+      (titleStr.includes(q) ||
+        wordsStr.includes(q) ||
+        exStr.includes(q) ||
+        diaStr.includes(q))
     );
   });
 

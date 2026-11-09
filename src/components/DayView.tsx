@@ -29,9 +29,10 @@ export const DayView: React.FC<DayViewProps> = ({
   const dayTitleId = useId();
 
   // Progress computation
-  const totalTasks = day.items.length;
-  const completedTasks = day.items.filter(
-    (item) => done[`${selectedDayNum}:${item.id}`]
+  const items = (day as any).items || day.tasks || [];
+  const totalTasks = items.length;
+  const completedTasks = items.filter(
+    (item: any) => done[`${selectedDayNum}:${item.id}`]
   ).length;
   const progressPercent =
     totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
@@ -172,7 +173,7 @@ export const DayView: React.FC<DayViewProps> = ({
 
       {/* Task list */}
       <ul className="list-none m-0 p-0 mt-6.5 space-y-0">
-        {day.items.map((item: TaskItem) => {
+        {items.map((item: any) => {
           const isDone = !!done[`${selectedDayNum}:${item.id}`];
           return (
             <li

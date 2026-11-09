@@ -8,6 +8,17 @@
         "status": { "type": "string" }
       }
     },
+    "JEEXState": {
+      "title": "JEEXState",
+      "description": "Full serialized state payload for JEE-X 2.0 command centre",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "statePayload": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["statePayload"]
+    },
     "UserProgress": {
       "title": "UserProgress",
       "description": "User daily study tracker ticks and completion state",
@@ -84,6 +95,14 @@
       "schema": "ConnectionTest",
       "description": "Probe path to validate Firestore client connection"
     },
+    "/study_trackers/{trackerId}/jeex/{docId}": {
+      "schema": "JEEXState",
+      "description": "JEE-X 2.0 full persistent state across browsers"
+    },
+    "/users/{userId}/jeex/{docId}": {
+      "schema": "JEEXState",
+      "description": "User-scoped JEE-X 2.0 full persistent state"
+    },
     "/study_trackers/{trackerId}/progress/{progressId}": {
       "schema": "UserProgress",
       "description": "Cross-browser synced progress state for study trackers"
@@ -103,26 +122,6 @@
     "/study_trackers/{trackerId}/board/{boardId}": {
       "schema": "BoardPaper",
       "description": "Cross-browser synced CBSE board paper records"
-    },
-    "/users/{userId}/progress/{progressId}": {
-      "schema": "UserProgress",
-      "description": "User completion progress state across all 129 days"
-    },
-    "/users/{userId}/mocks/{mockId}": {
-      "schema": "MockTest",
-      "description": "JEE Mock test scores and four buckets analysis"
-    },
-    "/users/{userId}/errors/{errorId}": {
-      "schema": "ErrorLogItem",
-      "description": "Error items categorized into four buckets"
-    },
-    "/users/{userId}/cards/{cardId}": {
-      "schema": "Flashcard",
-      "description": "Subject flashcards and concept summaries"
-    },
-    "/users/{userId}/board/{boardId}": {
-      "schema": "BoardPaper",
-      "description": "CBSE Class 12 Maths sample paper scores and loss categories"
     }
   }
 }

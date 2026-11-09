@@ -855,7 +855,9 @@ export function buildAllDays(): (DayData | null)[] {
         time: '45 min',
       };
       const at = D.kind === 'study' ? 4 : D.kind === 'board' ? 1 : 0;
-      D.items.splice(at, 0, it);
+      if (D.items) {
+        D.items.splice(at, 0, it as any);
+      }
     }
 
     if (D.kind === 'study' || D.kind === 'diagnostic') continue;
@@ -863,8 +865,8 @@ export function buildAllDays(): (DayData | null)[] {
 
   // Add error log item to study days
   days.forEach((D) => {
-    if (D && D.kind === 'study' && D.n > 1) {
-      D.items.push(logItem());
+    if (D && D.kind === 'study' && (D.n ?? 0) > 1 && D.items) {
+      D.items.push(logItem() as any);
     }
   });
 

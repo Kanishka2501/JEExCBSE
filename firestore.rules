@@ -25,15 +25,29 @@ service cloud.firestore {
       allow read: if true;
     }
 
-    // Cross-Browser Synced Study Trackers (allows any browser visiting the app to sync progress)
+    // JEE-X 2.0 Command Centre State
+    match /study_trackers/{trackerId}/jeex/{docId} {
+      allow get, list: if isValidId(trackerId) && isValidId(docId);
+      allow create, update: if isValidId(trackerId)
+                            && isValidId(docId)
+                            && request.resource.data.statePayload is string;
+      allow delete: if isValidId(trackerId) && isValidId(docId);
+    }
+
+    match /users/{userId}/jeex/{docId} {
+      allow get, list: if isOwner(userId) && isValidId(docId);
+      allow create, update: if isOwner(userId)
+                            && isValidId(docId)
+                            && request.resource.data.statePayload is string;
+      allow delete: if isOwner(userId) && isValidId(docId);
+    }
+
+    // Cross-Browser Synced Study Trackers (Legacy & modular paths)
     match /study_trackers/{trackerId}/progress/{progressId} {
       allow get, list: if isValidId(trackerId);
-      allow create: if isValidId(trackerId)
-                    && isValidId(progressId)
-                    && request.resource.data.done is map;
-      allow update: if isValidId(trackerId)
-                    && isValidId(progressId)
-                    && request.resource.data.done is map;
+      allow create, update: if isValidId(trackerId)
+                            && isValidId(progressId)
+                            && request.resource.data.done is map;
       allow delete: if isValidId(trackerId) && isValidId(progressId);
     }
 

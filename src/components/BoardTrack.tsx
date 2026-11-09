@@ -28,7 +28,7 @@ export const BoardTrack: React.FC<BoardTrackProps> = ({
   const [msg, setMsg] = useState<{ text: string; bad?: boolean } | null>(null);
 
   const sortedEntries = [...boardEntries].sort((a, b) =>
-    a.date < b.date ? -1 : a.date > b.date ? 1 : (a.ts || 0) - (b.ts || 0)
+    (a.date || '') < (b.date || '') ? -1 : (a.date || '') > (b.date || '') ? 1 : (a.ts || 0) - (b.ts || 0)
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -61,10 +61,10 @@ export const BoardTrack: React.FC<BoardTrackProps> = ({
   let insightText = 'Your CBSE paper scores appear here once you save one.';
   if (sortedEntries.length > 0) {
     const last = sortedEntries[sortedEntries.length - 1];
-    insightText = `Latest: ${last.marks} out of 80.`;
+    insightText = `Latest: ${last.marks || 0} out of 80.`;
     if (sortedEntries.length > 1) {
       const prev = sortedEntries[sortedEntries.length - 2];
-      const diff = last.marks - prev.marks;
+      const diff = (last.marks || 0) - (prev.marks || 0);
       if (diff === 0) {
         insightText += ' Level with the previous paper.';
       } else if (diff > 0) {
@@ -75,7 +75,8 @@ export const BoardTrack: React.FC<BoardTrackProps> = ({
     }
   }
 
-  const shortDate = (iso: string) => {
+  const shortDate = (iso?: string) => {
+    if (!iso) return '-';
     const d = new Date(iso + 'T00:00:00');
     return formatDate(d, { day: 'numeric', month: 'short' });
   };

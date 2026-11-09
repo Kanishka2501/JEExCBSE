@@ -23,10 +23,11 @@ export const AnswerSheet: React.FC<AnswerSheetProps> = ({
     for (let n = 1; n <= TOTAL_DAYS; n++) {
       const d = days[n];
       if (!d) continue;
-      const t = d.items.length;
+      const dItems = d.items || (d as any).tasks || [];
+      const t = dItems.length;
       let c = 0;
       for (let i = 0; i < t; i++) {
-        if (done[`${n}:${d.items[i].id}`]) c++;
+        if (done[`${n}:${dItems[i]?.id}`]) c++;
       }
       const p = t > 0 ? Math.round((c / t) * 100) : 0;
       map.set(n, { c, t, p });
